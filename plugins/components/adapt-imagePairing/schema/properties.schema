@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "adapt-imagePairing properties schema",
+  "type": "object",
+  "properties": {
+    "_component": { "const": "imagePairing" },
+    "title": { "type": "string" },
+    "displayTitle": { "type": "string" },
+    "body": { "type": "string" },
+    "instruction": { "type": "string" },
+
+    "pairs": {
+      "type": "array",
+      "title": "Pairs (recommended)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "left": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "image": { "type": "string" },
+              "alt": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "right": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "image": { "type": "string" },
+              "alt": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["left", "right"],
+        "additionalProperties": false
+      }
+    },
+
+    "image_left": {
+      "type": "array",
+      "title": "Legacy left items",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "image": { "type": "string" },
+              "alt": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "image_right": {
+      "type": "array",
+      "title": "Legacy right items",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "image": { "type": "string" },
+              "alt": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+
+    "_attempts": {
+      "type": "number",
+      "default": 1,
+      "title": "Number of attempts"
+    },
+    "_canShowModelAnswer": {
+      "type": "boolean",
+      "default": true,
+      "title": "Allow show correct answer"
+    },
+    "_canShowFeedback": {
+      "type": "boolean",
+      "default": true,
+      "title": "Allow show feedback"
+    },
+    "_canShowMarking": {
+      "type": "boolean",
+      "default": true,
+      "title": "Show marking after submit"
+    },
+    "_shouldDisplayAttempts": {
+      "type": "boolean",
+      "default": false,
+      "title": "Display attempts remaining"
+    },
+    "_questionWeight": {
+      "type": "number",
+      "default": 1,
+      "title": "Question weight for scoring"
+    },
+    "_recordInteraction": {
+      "type": "boolean",
+      "default": true,
+      "title": "Record interaction in LMS"
+    },
+    "_feedback": {
+      "type": "object",
+      "title": "Feedback",
+      "properties": {
+        "title": { "type": "string", "default": "Feedback" },
+        "correct": { "type": "string", "default": "Correct! All pairs match." },
+        "_incorrect": {
+          "type": "object",
+          "properties": {
+            "final": { "type": "string", "default": "Incorrect. Some pairs don't match." },
+            "notFinal": { "type": "string", "default": "Not quite right. Try again." }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

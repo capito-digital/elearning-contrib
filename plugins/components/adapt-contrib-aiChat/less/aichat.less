@@ -1,0 +1,223 @@
+.aichat-item__feedback-text > a {
+  font-weight: bold;
+  color: mediumblue;
+}
+.aichat {
+  &__inner {
+    // Component inner styles
+    .js-aichat-response {
+      font-weight: @font-weight-regular;
+    }
+  }
+
+  &__widget {
+    // Widget styles
+    &.is-disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    &.is-complete {
+      // Completed state styles
+    }
+
+    &.is-correct {
+      // Correct state styles
+    }
+  }
+
+  &-item {
+    &__container {
+      margin-bottom: 1rem;
+    }
+
+    &__textarea-container {
+      margin-bottom: 1rem;
+    }
+
+    &__textarea-label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    &__textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-family: inherit;
+      line-height: 1.4;
+      resize: vertical;
+      min-height: 100px;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #007cba;
+        box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+      }
+
+      &:disabled {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      &::placeholder {
+        color: #999;
+        font-style: italic;
+      }
+    }
+
+    &__button-container {
+      margin-bottom: 1rem;
+    }
+
+    &__button {
+      float: right;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1.5rem;
+      background-color: #007cba;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+
+      &:hover:not(:disabled) {
+        background-color: #005a87;
+      }
+
+      &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+    }
+
+    &__loading {
+      margin-top: 80px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+
+      &.is-hidden {
+        display: none;
+      }
+    }
+
+    &__loading-text {
+      font-style: italic;
+      color: #666;
+    }
+
+    &__loading-spinner {
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #007cba;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    &__response {
+      margin-top: 80px;
+      padding: 1rem;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+
+      &.is-hidden {
+        display: none;
+      }
+    }
+
+    &__response-label {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    &__response-text {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    &__state {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    &__icon {
+      width: 24px;
+      height: 24px;
+      display: none;
+
+      .icon {
+        width: 100%;
+        height: 100%;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+    }
+
+    &__correct-icon {
+      .icon {
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwN2NiYSI+PHBhdGggZD0iTTkgMTYuMTdsNC4yNC00LjI0TDEyIDEwLjU4IDkgNy41OSA2IDEwLjU5bDMgMyAuMTc1LjE3NXoiLz48L3N2Zz4=');
+      }
+    }
+
+    &__incorrect-icon {
+      .icon {
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2RjMzU0NSI+PHBhdGggZD0iTTEyIDJDNi40NyAyIDIgNi40NyAyIDEyczQuNDcgMTAgMTAgMTAgMTAtNC40NyAxMC0xMFMxNy41MyAyIDEyIDJ6bTUgMTMuNTlMMTUuNTkgMTcgMTIgMTMuNDEgOC40MSAxNyA3IDE1LjU5IDEwLjU5IDEyIDcgOC40MSA4LjQxIDcgMTIgMTAuNTkgMTUuNTkgNyAxNyA4LjQxIDEzLjQxIDEyIDE3IDE1LjU5eiIvPjwvc3ZnPg==');
+      }
+    }
+  }
+}
+
+// Show correct/incorrect icons when marking is displayed
+.aichat__widget {
+  &.is-correct .aichat-item__correct-icon,
+  &.is-incorrect .aichat-item__incorrect-icon {
+    display: block;
+  }
+}
+
+// Animation for spinner
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Utility classes
+.is-hidden {
+  display: none !important;
+}
+
+.aria-label {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

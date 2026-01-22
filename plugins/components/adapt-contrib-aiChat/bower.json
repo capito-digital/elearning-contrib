@@ -1,0 +1,17 @@
+{
+  "name": "adapt-contrib-aiChat",
+  "version": "1.0.0",
+  "displayName": "AI Chat",
+  "component": "aiChat",
+  "description": "A component that makes API calls to an AI chat endpoint and displays the response",
+  "main": "/js/adapt-contrib-aiChat.js",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component",
+    "ai",
+    "chat",
+    "api"
+  ],
+  "license": "GPL-3.0",
+  "targetAttribute": "_aiChat"
+}

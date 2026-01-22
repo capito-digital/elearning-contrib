@@ -1,0 +1,15 @@
+{
+  "name": "adapt-contrib-user-transcribe",
+  "version": "0.1",
+  "framework": ">=5.19.1",
+  "component": "user-transcribe",
+  "displayName": "UserTranscribe",
+  "description": "An extension to transcribe user input into a speech-to-text recording.",
+  "main": "/js/adapt-contrib-user-transcribe.js",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component"
+  ],
+  "license": "GPL-3.0",
+  "private": true
+}

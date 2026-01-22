@@ -1,0 +1,15 @@
+<div id="block-navigation-progress-container" class="block-navigation-progress-container">
+  <div class="block-navigation-progress-container__inner">
+    <button class="block-navigation__btn block-navigation__btn--prev js-block-nav-prev"
+            aria-label="{{_globals._extensions._blockNavigation._buttons._previous.ariaLabel}}"
+            {{#if disablePrev}}disabled title="{{_globals._extensions._blockNavigation._buttons._previous.disabledTooltip}}"{{/if}}>
+      {{{_globals._extensions._blockNavigation._buttons._previous.text}}}
+    </button>
+    <progress id="progressbar" value={{progress}} max="100" aria-label="{{progressAria}}" title="{{progressText}}"></progress>
+    <button class="block-navigation__btn block-navigation__btn--next js-block-nav-next"
+            aria-label="{{#if nextButtonAria}}{{nextButtonAria}}{{else}}{{_globals._extensions._blockNavigation._buttons._next.ariaLabel}}{{/if}}"
+            {{#if disableNext}}disabled title="{{_globals._extensions._blockNavigation._buttons._next.disabledTooltip}}"{{/if}}>
+      {{#if nextButtonText}}{{{nextButtonText}}}{{else}}{{{_globals._extensions._blockNavigation._buttons._next.text}}}{{/if}}
+    </button>
+  </div>
+</div>

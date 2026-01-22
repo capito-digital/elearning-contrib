@@ -1,0 +1,36 @@
+<div id="block-navigation-container">
+    <div class="block-navigation-content-settings-container">
+        <div class="block-navigation-content-settings-container__inner">
+            <div id="block-navigation-cs-locale"></div>
+
+            <div class="block-navigation__tts">
+                <button class="block-navigation__btn block-navigation__btn--tts js-tts-toggle"
+                        aria-pressed="{{#if ttsEnabled}}true{{else}}false{{/if}}"
+                        aria-label="Toggle text-to-speech"
+                        title="Vorlese-Funktion ein-/ausschalten">
+                    {{#if ttsEnabled}}🔊{{else}}🔈{{/if}}
+                </button>
+                <!-- The audio controls panel will be injected here and slide out to the right -->
+            </div>
+
+        </div>
+    </div>
+    <div class="block-navigation" >
+        <div class="block-navigation__inner">
+
+            <div class="block-navigation__title">
+                <h1>{{{title}}}</h1>
+            </div>
+        </div>
+    </div>
+    <!-- Inline dialog used by content selection/badges -->
+    <div id="cs-dialog" class="cs-dialog" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="cs-dialog__overlay" data-cs-dialog-close></div>
+        <div class="cs-dialog__panel" role="document">
+            <button type="button" class="cs-dialog__close" aria-label="Close" data-cs-dialog-close>
+                ×
+            </button>
+            <div id="cs-dialog-content" class="cs-dialog__content"></div>
+        </div>
+    </div>
+</div>

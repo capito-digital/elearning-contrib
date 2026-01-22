@@ -1,0 +1,144 @@
+.imageOrdering__inner {
+  .imageOrdering__body {
+    margin-bottom: 1rem;
+  }
+
+  .imageOrdering__widget {
+    .imageOrdering__instructions {
+      margin-bottom: 0.5rem;
+      color: @item-color;
+    }
+
+    .imageOrdering__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .imageOrdering__item {
+      width: 180px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.5rem;
+      border: 2px solid @item-color;
+      border-radius: 8px;
+      background: @background;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      cursor: move;
+      transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+
+      img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .imageOrdering__item.is-dragging {
+      opacity: 0.8;
+      transform: scale(0.98);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .imageOrdering__item.is-dragover {
+      background: lighten(@item-color, 5%);
+      border-style: dashed;
+    }
+
+    .imageOrdering__item.is-correct {
+      border-color: @validation-success;
+    }
+
+    .imageOrdering__item.is-incorrect {
+      border-color: @validation-error;
+    }
+
+    .imageOrdering__item.is-clickable {
+      cursor: pointer;
+    }
+
+    .imageOrdering__text {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+      line-height: 1.25;
+      max-width: 100%;
+    }
+  }
+}
+
+.imageOrdering__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  cursor: zoom-out;
+
+  .imageOrdering__overlay-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .imageOrdering__overlay-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 40px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 10px;
+
+    &:hover {
+      color: #ccc;
+    }
+  }
+
+  .imageOrdering__overlay-image {
+    display: block;
+    max-width: 100%;
+    max-height: 90vh; // maxsize parameter: limiting to 90% of viewport height
+    object-fit: contain;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    background: #fff;
+    cursor: default;
+  }
+}
+
+@media (max-width: 768px) {
+  .imageOrdering__overlay {
+    .imageOrdering__overlay-close {
+      top: -10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+  }
+}

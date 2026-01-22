@@ -1,0 +1,89 @@
+.boxmenu-item {
+  display: flex;
+
+  &__inner {
+    width: 100%;
+    margin: 0 @menu-item-padding-hoz @menu-item-padding-ver;
+    padding: @menu-item-inner-padding-ver @menu-item-inner-padding-hoz;
+    background-color: @menu-item;
+    color: @menu-item-inverted;
+    border: 1px solid @menu-item-border-color;
+    border-radius: @item-border-radius;
+  }
+
+  &__image-container + &__details {
+    margin-top: @menu-item-image-margin;
+  }
+
+  &__title {
+    margin-bottom: @menu-item-title-margin;
+    .menu-item-title;
+  }
+
+  &__body {
+    margin-bottom: @menu-item-body-margin;
+    .menu-item-body;
+  }
+
+  &__body a {
+    .link-text;
+  }
+
+  &__duration {
+    margin-bottom: @menu-item-duration-margin;
+    .menu-item-body;
+  }
+
+  &__progress {
+    margin-bottom: @menu-item-progress-margin;
+  }
+
+  &__button-container {
+    display: flex;
+    align-items: center;
+  }
+
+  & when (@menu-item-btn-color-style = filled) {
+    &__button {
+      .menu-item-btn-color;
+
+      .no-touch &:not(.is-disabled):not(.is-locked):hover {
+        .menu-item-btn-color-hover;
+      }
+
+      html:not(.a11y-disable-focusoutline) &:focus-visible {
+        .menu-item-btn-color-focus;
+      }
+    }
+
+    &__button.is-locked {
+      .menu-item-btn-color-locked;
+    }
+  }
+
+  & when (@menu-item-btn-color-style = outline) {
+    &__button {
+      .menu-item-btn-color-outline;
+
+      .no-touch &:not(.is-disabled):not(.is-locked):hover {
+        .menu-item-btn-color-outline-hover;
+      }
+
+      html:not(.a11y-disable-focusoutline) &:focus-visible {
+        .menu-item-btn-color-outline-focus;
+      }
+    }
+
+    &__button.is-locked {
+      .menu-item-btn-color-outline-locked;
+    }
+  }
+
+  &__status {
+    margin-left: @menu-item-status-margin;
+  }
+
+  &.has-img-zoom &__image-container {
+    .img-zoom();
+  }
+}

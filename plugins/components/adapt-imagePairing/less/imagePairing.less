@@ -1,0 +1,451 @@
+// Defaults (in case theme doesn't provide these)
+@positive: #28a745; // Green for correct
+@negative: #dc3545; // Red for incorrect
+
+// Basic styling for the imagePairing component
+.imagePairing {
+  // Tile sizing variables (override in theme if needed)
+  @tile-min-size: 110px;
+  @tile-size: 130px;
+
+  &__inner {
+  }
+
+  &__widget {
+    margin-top: 1rem;
+  }
+
+  &__body {
+    margin-bottom: 1rem;
+  }
+
+  &__split {
+    display: grid;
+    grid-template-columns: 1fr 2px 1fr;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  &__divider {
+    background: @background;
+    opacity: .3;
+    width: 2px;
+  }
+
+  &__col {
+    min-height: 220px;
+    background: fade(@item-color, 5%);
+    border: 1px solid fade(@item-color, 25%);
+    border-radius: 6px;
+    padding: .5rem;
+
+    &Header {
+      font-weight: 600;
+      margin-bottom: .5rem;
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(@tile-min-size, 1fr));
+    gap: .5rem;
+
+    &--left .imagePairing__leftItem,
+    &--right .imagePairing__rightItem {
+      background: @item-color;
+      color: @item-color-inverted;
+      border-radius: 4px;
+      border: 1px solid fade(@black, 10%);
+      height: @tile-size;
+      max-height: @tile-size;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: .25rem;
+      position: relative;
+      container-type: inline-size;
+    }
+  }
+
+  &__text {
+    padding: .25rem .5rem;
+    display: inline-block;
+    width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    word-break: break-word;
+  }
+
+  &__leftItem {
+    cursor: grab;
+
+    &.is-dragging {
+      opacity: .6;
+      cursor: grabbing;
+    }
+
+    &.is-placed {
+      opacity: .5;
+    }
+
+    &.is-disabled {
+      cursor: not-allowed;
+      opacity: .5;
+    }
+
+    &.is-clickable {
+      cursor: pointer;
+    }
+
+    &.is-correct {
+      border-color: @positive;
+      background: fade(@positive, 10%);
+    }
+
+    &.is-incorrect {
+      border-color: @negative;
+      background: fade(@negative, 10%);
+    }
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+  }
+
+  &__rightItem {
+    transition: background .15s ease, box-shadow .15s ease;
+
+    &.is-dragover {
+      box-shadow: 0 0 0 2px @item-color inset;
+    }
+
+    &.has-assignment {
+      background: fade(@item-color, 15%);
+    }
+
+    &.is-disabled {
+      cursor: not-allowed;
+      opacity: .6;
+    }
+
+    &.is-clickable {
+      cursor: pointer;
+    }
+
+    &.is-correct {
+      border-color: @positive;
+      background: fade(@positive, 10%);
+    }
+
+    &.is-incorrect {
+      border-color: @negative;
+      background: fade(@negative, 10%);
+    }
+
+    &.needs-assignment {
+      animation: ip-shake .6s ease;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+  }
+
+  &__rightInner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  // Wrap for the dynamic content inside right tiles
+  &__rightContent {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Paired state: show two smaller thumbnails side-by-side within the right tile
+  &__paired {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: .25rem;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-items: center;
+    padding: .125rem;
+  }
+
+  &__pairedItem {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: fade(@black, 3%);
+    border-radius: 2px;
+    overflow: hidden;
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+
+    // Text content inside paired cells
+    .imagePairing__text,
+    .imagePairing__text--paired {
+      padding: 0.25rem 0.5rem;
+      display: inline-block;
+      width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      font-size: clamp(1rem, 7cqw, 1rem);
+      line-height: 1.15;
+      hyphens: auto;
+      word-break: normal;
+    }
+  }
+
+  // New overlapped paired layout (~70% size cards)
+  &__pairedOver {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__pairedCard {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 70%;
+    height: 70%;
+    transform: translate(-50%, -50%);
+    background: fade(@black, 3%);
+    border-radius: 4px;
+    box-shadow: 0 2px 6px fade(@black, 15%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform .15s ease;
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .imagePairing__text,
+    .imagePairing__text--paired {
+      padding: .25rem .4rem;
+      font-size: .9em;
+      text-align: center;
+    }
+  }
+
+  // Base (right) card slightly offset
+  &__pairedCard--base {
+    // Increase offset so both items are more clearly visible
+    // Previously: 8% x, 6% y
+    transform: translate(calc(-50% - 14%), calc(-50% + 10%));
+    z-index: 1;
+  }
+
+  // Top (left) card slightly offset the other way
+  &__pairedCard--top {
+    // Previously: 8% x, 6% y
+    transform: translate(calc(-50% + 14%), calc(-50% - 10%));
+    z-index: 2;
+  }
+
+  // Reset button for pairs (shown on hover)
+  &__resetPair {
+    z-index: 100;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    border: none;
+    background: fade(@black, 35%);
+    color: @white;
+    font-size: 18px;
+    line-height: 24px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s ease, background .15s ease;
+  }
+
+  &__rightItem.is-paired:hover .imagePairing__resetPair,
+  &__rightItem.is-paired .imagePairing__resetPair:focus {
+    opacity: 1;
+  }
+
+  &__resetPair:hover {
+    background: fade(@black, 55%);
+  }
+
+  &__assignmentBadge {
+    // Hidden as numeric indicator is no longer shown
+    display: none;
+  }
+
+  &__controls {
+    margin-top: 1rem;
+    display: flex;
+    gap: .5rem;
+    // Ensure controls are always visible regardless of theme
+    visibility: visible;
+    opacity: 1;
+
+    .btn[disabled] {
+      opacity: .5;
+      pointer-events: none;
+      display: inline-flex !important; // prevent themes from hiding disabled buttons
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  // Submission state styles
+  .is-submitted& {
+    .imagePairing__leftItem {
+      cursor: default;
+    }
+  }
+
+  // Show correct answer visual state
+  .show-correct-answer& {
+    .imagePairing__leftItem.is-correct-pair,
+    .imagePairing__rightItem.is-correct-pair {
+      box-shadow: 0 0 0 3px @positive;
+    }
+  }
+}
+
+.imagePairing__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  cursor: zoom-out;
+
+  .imagePairing__overlay-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .imagePairing__overlay-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 40px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 10px;
+
+    &:hover {
+      color: #ccc;
+    }
+  }
+
+  .imagePairing__overlay-image {
+    display: block;
+    max-width: 100%;
+    max-height: 90vh; // maxsize parameter: limiting to 90% of viewport height
+    object-fit: contain;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    background: #fff;
+    cursor: default;
+  }
+}
+
+@media (max-width: 768px) {
+  .imagePairing__overlay {
+    .imagePairing__overlay-close {
+      top: -10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+  }
+}
+
+// Correctness marker at component root
+.component.is-correct .imagePairing__widget {
+  box-shadow: 0 0 0 2px fade(@positive, 40%) inset;
+}
+.component.is-incorrect .imagePairing__widget {
+  box-shadow: 0 0 0 2px fade(@negative, 40%) inset;
+}
+
+// Buttons container (rendered by ButtonsView)
+.imagePairing__widget .btn__container {
+  margin-top: 1rem;
+}
+
+@keyframes ip-shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}

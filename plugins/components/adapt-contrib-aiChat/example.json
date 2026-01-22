@@ -1,0 +1,21 @@
+{
+  "_id": "c-101",
+  "_parentId": "b-101",
+  "_type": "component",
+  "_component": "aichat",
+  "_classes": "",
+  "_layout": "full",
+  "_attempts": 1,
+  "title": "AI Chat Example",
+  "displayTitle": "Ask the AI Assistant",
+  "body": "Click the button below to get an AI response for this question.",
+  "instruction": "Use the AI chat feature to get assistance.",
+  "_courseId": "course-123",
+  "_questionId": "question-456",
+  "_buttonText": "Ask AI Assistant",
+  "_loadingText": "Getting AI response...",
+  "_canShowFeedback": true,
+  "_canShowMarking": true,
+  "_recordInteraction": true,
+  "_questionWeight": 1
+}

@@ -1,0 +1,17 @@
+{
+  "name": "adapt-contrib-roleplay",
+  "version": "1.0.0",
+  "displayName": "Simulator",
+  "component": "aiRoleplay",
+  "description": "A component that allows the user to roleplay scenarios with an AI assistant.",
+  "main": "/js/adapt-contrib-roleplay.js",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component",
+    "ai",
+    "chat",
+    "api"
+  ],
+  "license": "GPL-3.0",
+  "targetAttribute": "_aiRoleplay"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "adapt-external",
+  "version": "1.0.0",
+  "framework": ">=5.19.1",
+  "component": "adapt-external",
+  "targetAttribute": "_external",
+  "displayName": "External Content",
+  "description": "A component for displaying external content",
+  "main": "/js/external.js",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component"
+  ],
+  "license": "GPL-3.0",
+  "private": true
+}

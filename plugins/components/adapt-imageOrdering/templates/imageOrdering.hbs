@@ -1,0 +1,20 @@
+<div class="component__inner imageOrdering__inner">
+  {{> component this}}
+
+  {{#if body}}
+    <div class="component__body imageOrdering__body">{{{body}}}</div>
+  {{/if}}
+
+  <div class="component__widget imageOrdering__widget">
+    <div class="imageOrdering__instructions">{{instruction}}</div>
+    <ul class="imageOrdering__list js-order-list" aria-label="Items to order"></ul>
+    <div class="btn__container"></div>
+  </div>
+
+  <div class="imageOrdering__overlay js-image-overlay" style="display: none;" aria-hidden="true">
+    <div class="imageOrdering__overlay-content">
+      <button type="button" class="imageOrdering__overlay-close js-overlay-close" aria-label="Close overlay">&times;</button>
+      <img class="imageOrdering__overlay-image js-overlay-image" src="" alt="">
+    </div>
+  </div>
+</div>

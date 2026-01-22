@@ -1,0 +1,134 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "$ref": "http://localhost/plugins/content/component/model.schema",
+  "globals": {
+    "ariaRegion": {
+      "type": "string",
+      "required": true,
+      "default": "AI Chat component",
+      "inputType": "Text",
+      "validators": [],
+      "translatable": true
+    }
+  },
+  "properties": {
+    "_supportedLayout": {
+      "type": "string",
+      "required": true,
+      "enum": ["full-width", "half-width", "both"],
+      "default": "both",
+      "editorOnly": true
+    },
+    "instruction": {
+      "type": "string",
+      "required": false,
+      "default": "",
+      "inputType": "Text",
+      "validators": [],
+      "help": "This is the instruction text",
+      "translatable": true
+    },
+    "_courseId": {
+      "type": "string",
+      "required": true,
+      "default": "",
+      "title": "Course ID",
+      "inputType": "Text",
+      "validators": ["required"],
+      "help": "The course ID to pass to the AI chat API"
+    },
+    "_questionId": {
+      "type": "string",
+      "required": true,
+      "default": "",
+      "title": "Question ID", 
+      "inputType": "Text",
+      "validators": ["required"],
+      "help": "The question ID to pass to the AI chat API"
+    },
+    "_chapterId": {
+      "type": "string",
+      "required": true,
+      "default": "",
+      "title": "Chapter ID",
+      "inputType": "Text",
+      "validators": ["required"],
+      "help": "The chapter ID to pass to the AI chat API"
+    },
+    "_buttonText": {
+      "type": "string",
+      "required": false,
+      "default": "Ask AI",
+      "title": "Button Text",
+      "inputType": "Text",
+      "validators": [],
+      "help": "The text to display on the AI chat button",
+      "translatable": true
+    },
+    "_loadingText": {
+      "type": "string",
+      "required": false,
+      "default": "Loading...",
+      "title": "Loading Text",
+      "inputType": "Text", 
+      "validators": [],
+      "help": "The text to display while the AI request is processing",
+      "translatable": true
+    },
+    "_attempts": {
+      "type": "number",
+      "required": true,
+      "default": 1,
+      "title": "Attempts",
+      "inputType": "Number",
+      "validators": ["required", "number"],
+      "help": "How many attempts the learner is allowed"
+    },
+    "_canShowModelAnswer": {
+      "type": "boolean",
+      "required": true,
+      "default": true,
+      "title": "Display Model Answer",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "Allow the user to view the 'model answer' should they answer the question incorrectly"
+    },
+    "_canShowFeedback": {
+      "type": "boolean",
+      "required": true,
+      "default": true,
+      "title": "Display Feedback",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "Display feedback based on the learner's answer"
+    },
+    "_canShowMarking": {
+      "type": "boolean",
+      "default": true,
+      "title": "Display Marking",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "Display ticks and crosses on question completion"
+    },
+    "_recordInteraction": {
+      "type": "boolean",
+      "required": true,
+      "default": true,
+      "title": "Record interaction",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If disabled, recording the user's answer(s) to this question to cmi.interactions on the LMS will be disabled for this component only"
+    },
+    "_questionWeight": {
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "title": "Question Weight",
+      "inputType": "Number",
+      "validators": ["number"],
+      "help": "How much this question is worth"
+    }
+  }
+}
