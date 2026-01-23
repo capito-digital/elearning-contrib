@@ -973,11 +973,11 @@ class BlockNavigation extends Backbone.Controller {
         const locale = this.currentSelection?.locale.toUpperCase() || 'DE';
         const proficiency = this.currentSelection?.proficiency.toUpperCase() || 'ORIGINAL';
         const globals = this.getGlobalConfig();
-        const baseurl = globals._dashboardBaseUrl || Adapt.config.dashboardBaseUrl;
-        if (!baseurl) return;
+        const baseUrl = globals._dashboardBaseUrl || Adapt.config.dashboardBaseUrl;
+        if (!baseUrl) return;
         const indexQuery = (index !== undefined && index !== null) ? `&index=${encodeURIComponent(index)}` : '';
-        const url = `${baseurl}/audio/text-to-speech/${encodeURIComponent(speechId)}?proficiency=${proficiency}&locale=${locale}${indexQuery}`;
-        console.log('[blockNavigation] playing TTS', {speechId, index, url});
+
+        const url = `${baseUrl}/public/v1/audio/text-to-speech/${encodeURIComponent(speechId)}?proficiency=${proficiency}&locale=${locale}${indexQuery}`;
         try {
             // Mark as loading before we start fetching the new source
             if (!this._isLoadingAudio) {

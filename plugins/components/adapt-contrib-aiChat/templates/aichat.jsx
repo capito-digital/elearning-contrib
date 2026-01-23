@@ -101,7 +101,7 @@ export default function AiChat(props) {
                             </div>
                             <div
                                 className="aichat-item__response-text js-aichat-response-text"
-                                dangerouslySetInnerHTML={{__html: _aiResponse || ''}}
+                                dangerouslySetInnerHTML={{__html: _aiResponse['response'] || ''}}
                             >
                             </div>
                             {props._showFeedbackOptions && (

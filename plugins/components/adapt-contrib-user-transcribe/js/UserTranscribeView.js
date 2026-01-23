@@ -166,12 +166,13 @@ function createOverlayWidget(targetInput) {
                     const formData = new FormData();
                     formData.append('audio_file', audioBlob, 'recording.wav');
                     const baseUrl = (Adapt.course?.get('_globals') || {})._dashboardBaseUrl || Adapt.config.dashboardBaseUrl || '';
-                    const resp = await fetch(`${baseUrl}/audio/speech-to-text`, {
+                    const resp = await fetch(`${baseUrl}/public/v1/audio/speech-to-text`, {
                         method: 'POST',
                         body: formData
                     });
                     if (!resp.ok) throw new Error('Transcription request failed: ' + resp.status);
-                    const result = await resp.text();
+                    const response = await resp.json();
+                    const result = response['text'];
                     if (targetInput) {
                         const isEmpty = !targetInput.value || targetInput.value.length === 0;
                         targetInput.value = isEmpty ? result : (targetInput.value + ' ' + result);

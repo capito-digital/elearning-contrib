@@ -34,25 +34,41 @@ class AiChatModel extends QuestionModel {
         this.set('_isLoading', true);
         try {
             const requestBody = {
-                user_message: textareaContent
+                course_id: courseId,
+                question_id: questionId,
+                message: textareaContent
             };
 
-            const response = await fetch(`${baseUrl}/ai-chat/course/${courseId}/question/${questionId}`, {
+            let sessionToken = localStorage.getItem('capito_session_token');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+            if (sessionToken) {
+                headers['X-Session-Token'] = sessionToken;
+            }
+
+            const response = await fetch(`${baseUrl}/public/v1/chat`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
                 body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            // Save token from response
+            const newToken = response.headers.get('X-Session-Token');
+            if (newToken) {
+                localStorage.setItem('capito_session_token', newToken);
+            }
+
             const data = await response.json();
-            const evaluation = parseInt(data['evaluation']);
+            const evaluation = data['evaluation'] ? parseInt(data['evaluation']) : 5;
             const showFeedback = (evaluation <= 2);
             this.set({
-                '_aiResponse': data['text'],
+                '_aiResponse': data.message.text,
                 '_isInteractionComplete': !showFeedback,
                 '_isCorrect': !showFeedback,
                 '_isSubmitted': true,

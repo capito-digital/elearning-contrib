@@ -39,24 +39,57 @@ export default class CapitoBadgesView extends ComponentView {
             return;
         }
 
-        const userIdStr = this.userId ? this.userId : "";
+        const userIdStr = this.userId ? this.userId : "anonymous";
         console.log('loading badges for course_id ' + this.courseId + ' and user_id "' + userIdStr + '"');
-        const response = await fetch(this.baseUrl + '/course-progress/' + this.courseId + '/badges/' + userIdStr, {
-            method: 'GET',
-            headers: {
-                'Accept': 'text/html',
-                'HX-Request': true,
-            },
-            credentials: 'include'
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+
+        let sessionToken = localStorage.getItem('capito_session_token');
+        const headers = {
+            'Accept': 'application/json'
+        };
+        if (sessionToken) {
+            headers['X-Session-Token'] = sessionToken;
         }
 
-        const html = await response.text();
-        let target = menuContainer[0].querySelector('.menu-item__details-inner');
-        target.innerHTML = html + target.innerHTML
-        this.badgesLoaded = true;
+        try {
+            const response = await fetch(`${this.baseUrl}/public/v1/courses/${this.courseId}/badges/${userIdStr}`, {
+                method: 'GET',
+                headers: headers,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Save token from response
+            const newToken = response.headers.get('X-Session-Token');
+            if (newToken) {
+                localStorage.setItem('capito_session_token', newToken);
+            }
+
+            const data = await response.json();
+            
+            if (data.badges && data.badges.length > 0) {
+                let html = '';
+                html += '<p>Sie haben diesen Kurs bereits gemacht und dabei diese Abzeichen bekommen:</p>';
+
+                data.badges.forEach(badge => {
+                    const imgUrl = `assets/${badge.locale}_${badge.level}.png`;
+                    html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
+                });
+                html += '<p>Sie können den Kurs nochmal machen um noch mehr Abzeichen zu bekommen.</p>';
+                let target = menuContainer[0].querySelector('.menu-item__details-inner');
+                if (target) {
+                    const badgesDiv = document.createElement('div');
+                    badgesDiv.className = 'cs-badges';
+                    badgesDiv.innerHTML = html;
+                    target.insertBefore(badgesDiv, target.firstChild);
+                }
+            }
+            this.badgesLoaded = true;
+        } catch (error) {
+            console.error('capitoBadgesView: Failed to load badges:', error);
+        }
     }
 
     events() {

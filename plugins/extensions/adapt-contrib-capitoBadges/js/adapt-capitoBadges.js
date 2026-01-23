@@ -138,15 +138,34 @@ class CapitoBadges extends Backbone.Controller {
         const globals = this.getGlobalConfig();
         const baseUrl = globals._dashboardBaseUrl || Adapt.config.dashboardBaseUrl;
         const courseId = trackingData.course_id;
+        
+        // Prepare request body according to TrackProgressRequest
+        const body = {
+            lms_user_id: trackingData.user_id || 'anonymous',
+            locale: trackingData.locale,
+            proficiency: trackingData.proficiency,
+            score_as_percent: trackingData.scoreAsPercent || 0,
+            questions: trackingData.questions.map(q => ({
+                question_id: q.questionId,
+                correct: q.isCorrect,
+                user_answer: null // Not captured by current gatherAssessmentTrackingData
+            }))
+        };
+
+        let sessionToken = localStorage.getItem('capito_session_token');
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+        if (sessionToken) {
+            headers['X-Session-Token'] = sessionToken;
+        }
+
         try {
-            const response = await fetch(`${baseUrl}/course-progress/${courseId}/answers`, {
+            const response = await fetch(`${baseUrl}/public/v1/courses/${courseId}/progress`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'text/html',
-                    'HX-Request': true,
-                },
-                body: JSON.stringify(trackingData),
+                headers: headers,
+                body: JSON.stringify(body),
                 credentials: 'include',
             });
 
@@ -154,9 +173,50 @@ class CapitoBadges extends Backbone.Controller {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const html = await response.text();
+            // Save token from response
+            const newToken = response.headers.get('X-Session-Token');
+            if (newToken) {
+                localStorage.setItem('capito_session_token', newToken);
+            }
+
+            const data = await response.json();
+            
+            // Build simple HTML from JSON response for the dialog
+            // In the future, we might want to use a template for this
+            let html = '';
+            if (data.status === 'completed') {
+                html += '<div class="alert alert-success">';
+                html += '<h3>Gratulation! Sie haben den Kurs abgeschlossen!</h3>';
+                html += '<p>Sie haben folgende Abzeichen erhalten:</p>';
+                html += '<div class="cs-badges">';
+                data.earned_badges.forEach(badge => {
+                    const imgUrl = `assets/${badge.locale}_${badge.level}${badge.is_new ? "_new" : ""}.png`;
+                    html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
+                });
+                html += '</div>';
+                const hasGoldGerman = data.earned_badges.some(b => b.locale === 'de' && b.level === 'gold');
+                if (!hasGoldGerman) {
+                    html += '<p>Sie können den Kurs noch einmal machen. Dann können Sie noch mehr Abzeichen bekommen.</p>';
+                }
+                html += '</div>';
+            } else {
+                html += '<div class="alert alert-info">';
+                html += '<h3>Fortschritt gespeichert</h3>';
+                html += '<p>Ihre Antworten wurden gespeichert. Machen Sie weiter, um den Kurs abzuschließen.</p>';
+                html += '</div>';
+            }
+
+            // Inject basic styles if not present (simplified for now)
+            const style = `
+                <style>
+                    .cs-badges { display: flex; flex-wrap: wrap; gap: 16px; }
+                    .cs-badges > div { width: 120px; text-align: center; display: flex; flex-direction: column; align-items: center; background: white; border-radius: 10px; padding: 5px 0; }
+                    .cs-badges img { max-width: 100%; height: auto; display: block; }
+                </style>
+            `;
+            
             // Ask ContentSelectorView to show the dialog with provided HTML
-            Adapt.trigger('capitoBadges:showDialog', html);
+            Adapt.trigger('capitoBadges:showDialog', html + style);
         } catch (error) {
             console.error('capitoBadges: Failed to send tracking data:', error);
         }
