@@ -1,4 +1,2 @@
 .idea/**
-/adapt_course_output.zip
-/adapt_course_output/my-adapt-course/my-course.zip
-/adapt-course-data/adapt-course-template/my-course.zip
+/**/*.zip
