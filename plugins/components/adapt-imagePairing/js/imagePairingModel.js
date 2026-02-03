@@ -60,8 +60,7 @@ class ImagePairingModel extends QuestionModel {
             _maxScore: rightItems.length
         });
 
-        // Call setupDefaultSettings after setting initial values
-        this.setupDefaultSettings();
+        this._ensureButtonsAndDefaults();
     }
 
     _normalizePairs() {
@@ -170,7 +169,7 @@ class ImagePairingModel extends QuestionModel {
         });
     }
 
-    setupDefaultSettings() {
+    _ensureButtonsAndDefaults() {
         // Default question behaviours
         const defaults = {
             _canShowModelAnswer: true,

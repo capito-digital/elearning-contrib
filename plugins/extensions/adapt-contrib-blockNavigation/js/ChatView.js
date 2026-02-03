@@ -12,6 +12,47 @@ export default class ChatView extends Backbone.View {
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onClickOutside = this.onClickOutside.bind(this);
+
+        // Listen for locale/proficiency changes
+        this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onSelectionChanged);
+
+        // Get initial values
+        this.locale = this._getCurrentLocale();
+        this.proficiency = this._getCurrentProficiency();
+    }
+
+    onSelectionChanged(payload) {
+        this.locale = payload.locale;
+        this.proficiency = payload.proficiency;
+        console.log('[ChatView] contentSelector:selectionChanged', {
+            locale: this.locale,
+            proficiency: this.proficiency
+        });
+    }
+
+    _getCurrentLocale() {
+        // Read from localStorage (same approach as the controller)
+        try {
+            const stored = window.localStorage.getItem('contentSelector');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                return (parsed?.locale || 'de').toLowerCase();
+            }
+        } catch (e) { /* noop */
+        }
+        return 'de';
+    }
+
+    _getCurrentProficiency() {
+        try {
+            const stored = window.localStorage.getItem('contentSelector');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                return (parsed?.proficiency || 'original').toLowerCase();
+            }
+        } catch (e) { /* noop */
+        }
+        return 'original';
     }
 
     className() {
@@ -63,7 +104,7 @@ export default class ChatView extends Backbone.View {
                 const loc = elWithDataLocation.getAttribute('data-location') || '';
                 if (loc) {
                     const parts = loc.split('-');
-                    this.courseId = parts[parts.length - 1];
+                    this.courseId = parts.slice(-5).join('-');
                 }
             }
         } catch (e) {
@@ -148,10 +189,20 @@ export default class ChatView extends Backbone.View {
             }
             this.addSystemMessage('… wird gesendet');
             const baseUrl = this.getBaseUrl();
-            const resp = await fetch(`${baseUrl}/ai-chat/`, {
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+
+            };
+            const resp = await fetch(`${baseUrl}/public/v1/ai-chat`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
-                body: new URLSearchParams({course_id: this.courseId, user_message: message}).toString()
+                headers: headers,
+                body: JSON.stringify({
+                    locale: this.locale,
+                    proficiency: this.proficiency,
+                    course_id: this.courseId,
+                    message: message
+                })
             });
             // Remove the sending status
             this.removeLastSystemSendingMessage();
@@ -162,15 +213,12 @@ export default class ChatView extends Backbone.View {
             const contentType = resp.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
                 const data = await resp.json();
-                if (data && data.text) {
-                    this.addSystemMessage(String(data.text));
-                } else if (Array.isArray(data)) {
-                    this.addSystemMessage(data.map(String).join('\n'));
-                } else if (data && data.error) {
-                    this.addSystemMessage('Fehler: ' + String(data.error));
+                if (data && data.message && data.message.text) {
+                    this.addSystemMessage(String(data.message.text));
                 } else {
-                    this.addSystemMessage('Antwort erhalten.');
+                    this.addSystemMessage('Unbekannter Fehler beim Senden.');
                 }
+
             } else {
                 const txt = await resp.text();
                 const div = document.createElement('div');
@@ -238,7 +286,7 @@ export default class ChatView extends Backbone.View {
         const $message = $(
             `<div class="bn-chat__message bn-chat__message--${type} new"><p></p></div>`
         );
-        $message.find('p').text(String(text));
+        $message.find('p').html(String(text));
         this.$messages.append($message);
         // Scroll to bottom
         this.$messages.scrollTop(this.$messages[0].scrollHeight);

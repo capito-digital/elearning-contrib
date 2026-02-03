@@ -1,4 +1,5 @@
 import QuestionModel from 'core/js/models/questionModel';
+import Adapt from 'core/js/adapt';
 
 class AiChatModel extends QuestionModel {
 
@@ -15,12 +16,13 @@ class AiChatModel extends QuestionModel {
             _isLoading: false,
             _showFeedbackOptions: false
         });
+        this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onSelectionChanged);
     }
 
     // Make API call to the AI chat endpoint
     async makeAiChatRequest() {
-        const courseId = this.get('_courseId');
         const questionId = this.get('_questionId');
+        const courseId = this.get('_courseId');
         const baseUrl = this.get('_baseUrl');
 
         if (!courseId || !questionId) {
@@ -48,7 +50,7 @@ class AiChatModel extends QuestionModel {
                 headers['X-Session-Token'] = sessionToken;
             }
 
-            const response = await fetch(`${baseUrl}/public/v1/chat`, {
+            const response = await fetch(`${baseUrl}/public/v1/ai-chat`, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(requestBody)
