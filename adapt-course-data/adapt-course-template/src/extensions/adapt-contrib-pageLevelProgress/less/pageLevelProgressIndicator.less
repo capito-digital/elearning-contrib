@@ -1,0 +1,34 @@
+// Global indicator
+// --------------------------------------------------
+.pagelevelprogress {
+  &__indicator {
+    display: flex;
+    width: 2rem;
+    font-size: 1rem;
+    border: 0.0625rem solid @black;
+    border-radius: 50px;
+    overflow: hidden;
+    padding: 0.0625rem;
+  }
+
+  &__indicator-inner {
+    position: relative;
+    display: block;
+    height: @icon-size / 4;
+    width: 100%;
+    border-radius: 50px;
+    overflow: hidden;
+  }
+
+  &__indicator-bar {
+    display: block;
+    height: inherit;
+    min-width: 15%;
+    background-color: @black;
+    width: var(--adapt-pagelevelprogress-percentage);
+  }
+
+  &__indicator .js-indicator-aria-label {
+    top: 0;
+  }
+}

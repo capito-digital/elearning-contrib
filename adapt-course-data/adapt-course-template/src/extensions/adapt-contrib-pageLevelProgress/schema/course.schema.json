@@ -1,0 +1,163 @@
+{
+  "$anchor": "pageLevelProgress-course",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$patch": {
+    "source": {
+      "$ref": "course"
+    },
+    "with": {
+      "properties": {
+        "_globals": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "_extensions": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "_pageLevelProgress": {
+                  "type": "object",
+                  "title": "Page Level Progress",
+                  "default": {},
+                  "properties": {
+                    "pageLevelProgress": {
+                      "type": "string",
+                      "title": "Page Level Progress",
+                      "default": "List of page sections and completion status. Select incomplete sections to jump directly to the content.",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "pageLevelProgressIndicatorBar": {
+                      "type": "string",
+                      "title": "Page Level Progress indicator bar",
+                      "default": "Page progress. {{percentageComplete}}%. Open page sections.",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "pageLevelProgressMenuBar": {
+                      "type": "string",
+                      "title": "Page Level Progress menu bar",
+                      "default": "Page completion {{percentageComplete}}%",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "optionalContent": {
+                      "type": "string",
+                      "title": "Optional content",
+                      "default": "Optional content",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "_navOrder": {
+                      "type": "number",
+                      "title": "Navigation bar order",
+                      "description": "Determines the order in which the page level progress is displayed in the navigation bar. Negative numbers (e.g. -100) are left-aligned. Positive numbers (e.g. 100) are right-aligned.",
+                      "default": 90
+                    },
+                    "_navTooltip": {
+                      "type": "object",
+                      "title": "Page Level Progress navigation tooltip",
+                      "properties": {
+                        "_isEnabled": {
+                          "type": "boolean",
+                          "title": "Enable tooltip for navigation button",
+                          "default": true
+                        },
+                        "text": {
+                          "type": "string",
+                          "title": "",
+                          "default": "Page progress",
+                          "_adapt": {
+                            "translatable": true
+                          }
+                        }
+                      }
+                    },
+                    "_showLabel": {
+                      "type": "boolean",
+                      "title": "Enable navigation bar button label",
+                      "default": true
+                    },
+                    "navLabel": {
+                      "type": "string",
+                      "title": "Navigation bar button label",
+                      "default": "Page Progress",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "_drawerPosition": {
+                      "type": "string",
+                      "default": "auto",
+                      "title": "Drawer position",
+                      "description": "Determines the starting position of the drawer to open",
+                      "enum": [
+                        "auto",
+                        "left",
+                        "right"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "_pageLevelProgress": {
+          "type": "object",
+          "title": "Page Level Progress",
+          "default": {},
+          "properties": {
+            "_isEnabled": {
+              "type": "boolean",
+              "title": "Enable Page Level Progress",
+              "default": true
+            },
+            "title": {
+              "type": "string",
+              "title": "Alternate title",
+              "description": "Alternate title to display for the course",
+              "default": "",
+              "_adapt": {
+                "translatable": true
+              }
+            },
+            "_showPageCompletion": {
+              "type": "boolean",
+              "title": "Include overall page completion",
+              "description": "When enabled, the overall course progress will be calculated for all components. When disabled, only components that are set to be displayed in Page Level Progress will be included in the calculations. Defaults to enabled.",
+              "default": true
+            },
+            "_isCompletionIndicatorEnabled": {
+              "type": "boolean",
+              "title": "Show inline completion indicator",
+              "default": false
+            },
+            "_isShownInNavigationBar": {
+              "type": "boolean",
+              "title": "Show progress in the navigation bar",
+              "default": true
+            },
+            "_showAtCourseLevel": {
+              "type": "boolean",
+              "title": "Display all content objects and the current page components",
+              "description": "Controls whether to display all content objects and the current page components together, or just the current page components",
+              "default": false
+            },
+            "_useCourseProgressInNavigationButton": {
+              "type": "boolean",
+              "title": "Use course-level progress on navigation button",
+              "description": "When enabled, the navigation button will show course-level progress rather than page-level progress. Defaults to disabled.",
+              "default": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

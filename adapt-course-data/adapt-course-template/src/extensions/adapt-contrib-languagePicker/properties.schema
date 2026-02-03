@@ -1,0 +1,297 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "required": false,
+  "globals": {
+    "languageSelector": {
+      "type": "string",
+      "required": true,
+      "default": "Language selector",
+      "inputType": "Text",
+      "validators": [],
+      "translatable": true
+    },
+    "_navOrder": {
+      "type": "number",
+      "required": true,
+      "title": "Navigation bar order",
+      "help": "Determines the order in which the button is displayed in the navigation bar. Negative numbers (e.g. -100) are left-aligned. Positive numbers (e.g. 100) are right-aligned.",
+      "default": 0,
+      "inputType": "Text",
+      "validators": []
+    },
+    "_navTooltip": {
+      "type": "object",
+      "title": "Navigation tooltip",
+      "properties": {
+        "_isEnabled": {
+          "type": "boolean",
+          "default": true,
+          "title": "Enable tooltip for navigation button",
+          "inputType": "Checkbox",
+          "validators": []
+        },
+        "text": {
+          "type": "string",
+          "title": "",
+          "default": "Select course language",
+          "help": "The tooltip text to display on hover.",
+          "inputType": "Text",
+          "validators": [],
+          "translatable": true
+        }
+      }
+    },
+    "_showLabel": {
+      "type": "boolean",
+      "required": true,
+      "default": true,
+      "title": "Enable navigation button label",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "Determines whether a label is shown on the navigation bar button."
+    },
+    "navigationBarLabel": {
+      "type": "string",
+      "required": true,
+      "default": "Select course language",
+      "title": "Navigation bar button label",
+      "inputType": "Text",
+      "validators": [],
+      "translatable": true
+    },
+    "_drawerPosition": {
+      "type": "string",
+      "required": true,
+      "default": "auto",
+      "title": "Drawer position",
+      "help": "Determines the starting position of the drawer to open.",
+      "inputType": {
+        "type": "Select",
+        "options": [
+          "auto",
+          "left",
+          "right"
+        ]
+      },
+      "validators": []
+    },
+    "_navTooltip": {
+      "type": "object",
+      "title": "Navigation tooltip",
+      "properties": {
+        "_isEnabled": {
+          "type": " boolean",
+          "title": "Enable tooltip for Language selector button",
+          "default": true,
+          "inputType": "Checkbox",
+          "validators": [],
+          "required": true
+        },
+        "text": {
+          "type": "string",
+          "title": "Tooltip text",
+          "default": "Language selector",
+          "inputType": "Text",
+          "required": true
+        }
+      }
+    }
+  },
+  "properties": {
+    "pluginLocations": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "_languagePicker": {
+              "type": "object",
+              "required": false,
+              "legend": "Language Picker",
+              "properties": {
+                "_isEnabled": {
+                  "type": "boolean",
+                  "required": true,
+                  "default": false,
+                  "title": "Is enabled",
+                  "inputType": "Checkbox",
+                  "validators": [],
+                  "help": "Controls whether the Language Picker extension is enabled or disabled."
+                },
+                "title": {
+                  "type": "string",
+                  "required": false,
+                  "default": "",
+                  "title": "Browser Window Title",
+                  "inputType": "Text",
+                  "validators": [],
+                  "help": "Text to be shown in the browser's title bar when the language picker is displayed."
+                },
+                "displayTitle": {
+                  "type": "string",
+                  "required": false,
+                  "default": "",
+                  "title": "Language Picker Title",
+                  "inputType": "Text",
+                  "validators": [],
+                  "help": "Header text for the Language Picker"
+                },
+                "body": {
+                  "type": "string",
+                  "required": false,
+                  "default": "",
+                  "title": "Language Picker Body text",
+                  "inputType": "Text",
+                  "validators": [],
+                  "help": "Introductory or explanatory text for the Language Picker"
+                },
+                "_showOnCourseLoad": {
+                  "type": "boolean",
+                  "required": true,
+                  "default": true,
+                  "title": "Show on course load",
+                  "inputType": "Checkbox",
+                  "validators": [],
+                  "help": "Controls whether the Language Picker should be displayed on course load or not."
+                },
+                "_languagePickerIconClass": {
+                  "type": "string",
+                  "required": false,
+                  "default": "icon-language-2",
+                  "title": "Class to customise Language Picker icon in the navbar.",
+                  "inputType": "Text",
+                  "validators": [],
+                  "help": "Your default options here are: icon-globe, icon-language-1, icon-language-2"
+                },
+                "_restoreStateOnLanguageChange": {
+                  "type": "boolean",
+                  "required": true,
+                  "default": false,
+                  "title": "Restore course state on language change",
+                  "inputType": "Checkbox",
+                  "validators": [],
+                  "help": "Determines whether or not the language picker will try to restore the 'state' of the course when the user changes language. It is advised that you only enable this setting if all course languages have exactly the same structure; if they do not, some loss of tracking data will occur. If this setting is disabled, tracking data will be cleared when the user switches language - the 'Confirm Message' should be used to warn the user of this."
+                },
+                "_classes": {
+                  "type": "string",
+                  "required": false,
+                  "default": "",
+                  "title": "Classes",
+                  "inputType": "Text",
+                  "validators": [],
+                  "help": ""
+                },
+                "_languages": {
+                  "type": "array",
+                  "required": true,
+                  "title": "Languages",
+                  "items": {
+                    "type": "object",
+                    "required": true,
+                    "title": "Language",
+                    "properties": {
+                      "_language": {
+                        "type": "string",
+                        "required": true,
+                        "default": "",
+                        "title": "Language Code",
+                        "inputType": "Text",
+                        "validators": ["required"],
+                        "help": "This text must match the name of the language-specific folder located in the course root, e.g. en, fr, es"
+                      },
+                      "_direction": {
+                        "type": "string",
+                        "required": true,
+                        "default": "ltr",
+                        "title": "Text direction",
+                        "inputType": {"type": "Select", "options": ["ltr", "rtl"]},
+                        "validators": ["required"],
+                        "help": ""
+                      },
+                      "_isDisabled": {
+                        "type": "boolean",
+                        "required": true,
+                        "default": false,
+                        "title": "Is disabled",
+                        "inputType": "Checkbox",
+                        "validators": [],
+                        "help": "Allows you to disable selection of this language. This can be useful in situations where localisation into a particular language has not yet been completed."
+                      },
+                      "displayName": {
+                        "type": "string",
+                        "required": true,
+                        "default": "",
+                        "title": "Language Name",
+                        "inputType": "Text",
+                        "validators": ["required"],
+                        "help": "A user friendly name for the language, e.g. English, Français, Español"
+                      },
+                      "warningTitle": {
+                        "type": "string",
+                        "required": true,
+                        "default": "",
+                        "title": "Confirm Title",
+                        "inputType": "Text",
+                        "validators": ["required"],
+                        "help": "This text appears as the header of the dialog confirming the learner's intent to change languages."
+                      },
+                      "warningMessage": {
+                        "type": "string",
+                        "required": true,
+                        "default": "",
+                        "title": "Confirm Message",
+                        "inputType": "Text",
+                        "validators": ["required"],
+                        "help": "This text appears as the body of the dialog confirming the learner's intent to change languages.  Note: the warning message should indicate that any progress will be lost when the language is switched."
+                      },
+                      "_buttons": {
+                        "type": "object",
+                        "required": true,
+                        "title": "Prompt Buttons",
+                        "properties": {
+                          "yes": {
+                            "type": "string",
+                            "required": true,
+                            "default": "Yes",
+                            "title": "Confirm",
+                            "inputType": "Text",
+                            "validators": ["required"],
+                            "help": "Button text to confirm language change."
+                          },
+                          "no": {
+                            "type": "string",
+                            "required": true,
+                            "default": "No",
+                            "title": "Cancel",
+                            "inputType": "Text",
+                            "validators": ["required"],
+                            "help": "Button text to cancel language change."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "contentobject": {
+          "type": "object"
+        },
+        "article": {
+          "type": "object"
+        },
+        "block": {
+          "type": "object"
+        },
+        "component": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

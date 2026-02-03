@@ -1,0 +1,39 @@
+    // To go on a course
+    "_globals": {
+      "_extensions": {
+        "_pageLevelProgress": {
+          "_navOrder": 90,
+          "navLabel": "Page progress",
+          "_comment": "Position options include 'auto', 'left', and 'right'",
+          "_drawerPosition": "auto",
+          "_navTooltip": {
+            "_isEnabled": true,
+            "text": "Page progress"
+          }
+        }
+      }
+    }
+
+    "_pageLevelProgress": {
+        "_isEnabled": true,
+        "title": "",
+        "_showPageCompletion": true,
+        "_isCompletionIndicatorEnabled": true,
+        "_isShownInNavigationBar": true,
+        "_showAtCourseLevel": false,
+        "_useCourseProgressInNavigationButton": false
+    }
+
+    // To go on a contentObject
+    "_pageLevelProgress": {
+        "_isEnabled": true,
+        "_showPageCompletion": true,
+        "_isCompletionIndicatorEnabled": true,
+        "_excludeAssessments": false
+    }
+
+    // To go on an article, block or component
+    "_pageLevelProgress": {
+        "_isEnabled": true,
+        "_isCompletionIndicatorEnabled": true
+    }

@@ -1,0 +1,29 @@
+// Language Picker standalone page
+// --------------------------------------------------
+.languagepicker {
+  &__inner {
+    .l-container-responsive(@max-content-width);
+  }
+}
+
+// Notify direction amends
+// --------------------------------------------------
+.notify {
+  &__popup.is-ltr {
+    direction: ltr;
+  }
+
+  &__popup.is-ltr &__icon {
+    left: inherit;
+    right: 0;
+  }
+
+  &__popup.is-rtl {
+    direction: rtl;
+  }
+
+  &__popup.is-rtl &__icon {
+    right: inherit;
+    left: 0;
+  }
+}

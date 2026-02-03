@@ -1,0 +1,55 @@
+// PLP nav bar button
+// --------------------------------------------------
+.pagelevelprogress {
+  &__nav-btn &__indicator-wrapper {
+    display: inline-flex;
+    align-items: center;
+    min-height: @icon-size;
+  }
+}
+
+// PLP drawer
+// --------------------------------------------------
+.drawer .pagelevelprogress {
+  &__item-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__item-title {
+    width: 75%;
+  }
+
+  &__indicator {
+    margin-inline-start: calc(~'25% - 1rem');
+  }
+
+  &__item-btn.is-locked .pagelevelprogress__item-icon {
+    margin-inline-start: auto;
+  }
+
+  &__item-btn:not(.is-locked) .pagelevelprogress__item-icon {
+    display: none;
+  }
+
+  &__item-btn.is-locked .pagelevelprogress__item-icon .icon {
+    .icon-padlock-locked;
+  }
+
+  &__item-btn.is-locked .pagelevelprogress__indicator {
+    display: none;
+  }
+
+  &__item-optional {
+    width: 5rem;
+  }
+
+  &__item-optional-inner {
+    font-size: 0.75rem;
+  }
+
+  &__item-children {
+    margin-left: 0.5em;
+  }
+}
