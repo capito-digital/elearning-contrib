@@ -1,0 +1,15 @@
+.boxmenu-item {
+  width: 100%;
+
+  &.is-locked &__status .icon {
+    .icon-padlock-locked;
+  }
+
+  &.is-complete &__status .icon {
+    .icon-tick;
+  }
+
+  @media (min-width: @device-width-medium) {
+    width: 50%;
+  }
+}
