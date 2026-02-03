@@ -1,5 +1,3 @@
-src/components
-src/theme
 src/menu
 #src/extensions
 !src/extensions/adapt-blockStepper/

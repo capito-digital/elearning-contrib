@@ -1,0 +1,118 @@
+{
+  "$anchor": "graphic-component",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$merge": {
+    "source": {
+      "$ref": "component"
+    },
+    "with": {
+      "properties": {
+        "_supportedLayout": {
+          "type": "string",
+          "title": "Supported layout",
+          "default": "both",
+          "enum": [
+            "full-width",
+            "half-width",
+            "both"
+          ],
+          "_adapt": {
+            "editorOnly": true
+          }
+        },
+        "instruction": {
+          "type": "string",
+          "title": "Instruction",
+          "default": "",
+          "_adapt": {
+            "translatable": true
+          }
+        },
+        "_graphic": {
+          "type": "object",
+          "title": "Graphic",
+          "default": {},
+          "properties": {
+            "alt": {
+              "type": "string",
+              "title": "Alternative text",
+              "description": "A description of the image; required when it has meaning that must be conveyed to the learner. For 'decorative' images, leave this blank",
+              "default": "",
+              "_adapt": {
+                "translatable": true
+              }
+            },
+            "longdescription": {
+              "type": "string",
+              "title": "Long image description",
+              "help": "A long description of the image. This text appear below the image.",
+              "default": "",
+              "_adapt": {
+                "translatable": true
+              }
+            },
+            "large": {
+              "type": "string",
+              "title": "Large",
+              "description": "The large sized image for desktop devices",
+              "_backboneForms": {
+                "type": "Asset",
+                "media": "image"
+              }
+            },
+            "small": {
+              "type": "string",
+              "title": "Small",
+              "description": "The small sized image for mobile devices",
+              "_backboneForms": {
+                "type": "Asset",
+                "media": "image"
+              }
+            },
+            "attribution": {
+              "type": "string",
+              "title": "Attribution",
+              "description": "Text to be displayed as an attribution",
+              "default": "",
+              "_adapt": {
+                "translatable": true
+              }
+            },
+            "_url": {
+              "type": "string",
+              "title": "URL",
+              "description": "When the graphic is selected this is the url it will follow.",
+              "default": ""
+            },
+            "_target": {
+              "type": "string",
+              "title": "Target attribute",
+              "description": "This targets where to open the link. Acceptable values are '_blank' (opens the linked document in a new window or tab), '_parent' (opens the linked document in the parent frame), '_top' (opens the linked document in the full body of the window) or '_self' (opens the linked document in the same frame as it was selected. If no value is set, the default is '_blank'.",
+              "enum": [
+                "",
+                "_blank",
+                "_self",
+                "_parent",
+                "_top"],
+              "default": "_blank",
+              "_backboneForms": "Select"
+            }
+          }
+        },
+        "_isScrollable": {
+          "type": "boolean",
+          "title": "Enable horizontal scrolling",
+          "description": "Allow the user to view the 'model answer' if they answer the question incorrectly",
+          "default": false
+        },
+        "_defaultScrollPercent": {
+          "type": "number",
+          "title": "Scroll percent",
+          "description": "0 is left most, 50 is in the middle, 100 is right most.",
+          "default": 0
+        }
+      }
+    }
+  }
+}

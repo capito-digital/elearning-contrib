@@ -1,0 +1,93 @@
+.accordion {
+  overflow-anchor: none;
+}
+
+.accordion-item {
+  &__btn {
+    width: 100%;
+  }
+
+  &__content {
+    display: none;
+  }
+
+  // Item icon states
+  // --------------------------------------------------
+  &__btn.is-closed &__icon .icon {
+    .icon-plus;
+  }
+
+  &__btn.is-visited &__icon .icon {
+    .icon-tick;
+  }
+
+  // vertical items
+  &.is-center-aligned &__btn {
+    text-align: center;
+  }
+
+  &.is-center-aligned &__title-icon,
+  &.is-center-aligned &__title {
+    display: block;
+  }
+
+  &.is-center-aligned &__icon {
+    display: block;
+  }
+
+  &.is-center-aligned &__content {
+    text-align: center;
+  }
+
+  // Set up margin between body and image elements
+  // Turn off margin when image is left / right aligned on desktop
+  // --------------------------------------------------
+  &.has-image &__body {
+    margin-bottom: @item-padding;
+  }
+
+  @media (min-width: @device-width-medium) {
+    &.has-image.align-image-left &__body,
+    &.has-image.align-image-right &__body {
+      margin-bottom: 0;
+    }
+  }
+
+  // Predefined image alignment classes
+  // Aligns image either left or right on desktop
+  // Defaults to underneath on smaller screens
+  // --------------------------------------------------
+  @media (min-width: @device-width-medium) {
+    &.align-image-left &__content-inner,
+    &.align-image-right &__content-inner {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    &.align-image-left &__body,
+    &.align-image-right &__body {
+      width: 60%;
+    }
+
+    &.align-image-left &__image-container,
+    &.align-image-right &__image-container {
+      width: 40%;
+    }
+
+    &.align-image-left &__content-inner {
+      flex-direction: row-reverse;
+    }
+
+    &.align-image-left &__image-container {
+      margin-inline-end: @item-padding;
+    }
+
+    &.align-image-right &__content-inner {
+      flex-direction: row;
+    }
+
+    &.align-image-right &__image-container {
+      margin-inline-start: @item-padding;
+    }
+  }
+}

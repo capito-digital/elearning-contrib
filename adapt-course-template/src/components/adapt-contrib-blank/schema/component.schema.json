@@ -1,0 +1,72 @@
+{
+  "$anchor": "blank-component",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$merge": {
+    "source": {
+      "$ref": "component"
+    },
+    "with": {
+      "properties": {
+        "_isOptional": {
+          "type": "boolean",
+          "default": true,
+          "isSetting": true,
+          "inputType": "Checkbox",
+          "validators": [],
+          "title": "Is this optional?",
+          "help": "An optional component does not have to be completed by the user."
+        },
+        "_supportedLayout": {
+          "type": "string",
+          "title": "Supported layout",
+          "default": "both",
+          "enum": [
+            "full-width",
+            "half-width",
+            "both"
+          ],
+          "_adapt": {
+            "editorOnly": true
+          }
+        },
+        "displayTitle": {
+          "type": "string",
+          "title": "Display title",
+          "description": "When viewing an element - this is the title that will be displayed on the page",
+          "default": "",
+          "_adapt": {
+            "translatable": false
+          },
+          "_backboneForms": {
+            "type": "DisplayTitle",
+            "showInUi": false
+          }
+        },
+        "body": {
+          "type": "string",
+          "title": "Body",
+          "default": "",
+          "_adapt": {
+            "translatable": false
+          },
+          "_backboneForms": {
+            "type": "TextArea",
+            "showInUi": false
+          }
+        },
+        "instruction": {
+          "type": "string",
+          "title": "Instruction",
+          "default": "",
+          "_adapt": {
+            "translatable": true
+          },
+          "_backboneForms": {
+            "showInUi": false
+          }
+        }
+      }
+    }
+  }
+}

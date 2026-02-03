@@ -1,0 +1,28 @@
+// Overrides for mediaelementplayer.less
+// --------------------------------------------------
+.mejs__container .mejs__controls .mejs__time {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+// Fullscreen sizing fix
+// --------------------------------------------------
+.mejs__container-fullscreen .mejs__mediaelement,
+.mejs__container-fullscreen .mejs__mediaelement > div,
+.mejs__container-fullscreen video {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: @black;
+}
+
+// Bug fix to contain video when in portrait mode
+// --------------------------------------------------
+.orientation-portrait .mejs__container-fullscreen video {
+  object-fit: contain;
+}
+
+// Button icon fixes
+// --------------------------------------------------
+.mejs__button.mejs__jump-forward-button > button {
+  background-size: contain;
+}

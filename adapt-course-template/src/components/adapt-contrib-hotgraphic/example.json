@@ -1,0 +1,208 @@
+    // Standard Hot Graphic
+    // --------------------------------------------------
+    {
+        "_id": "c-05",
+        "_parentId": "b-05",
+        "_type": "component",
+        "_component": "hotgraphic",
+        "_classes": "",
+        "_layout": "full",
+        "title": "Hot graphic",
+        "displayTitle": "Hot graphic",
+        "body": "This is optional body text.",
+        "instruction": "Select the icons to find out more.",
+        "mobileBody": "This is optional body text that will be shown when viewed on mobile.",
+        "mobileInstruction": "Select the plus icon followed by the next arrow to find out more.",
+        "_comment": "setCompletionOn = inview | allItems",
+        "_setCompletionOn": "allItems",
+        "_canCycleThroughPagination": false,
+        "_hidePagination": false,
+        "_isNarrativeOnMobile": true,
+        "_isMobileTextBelowImage": false,
+        "_isStackedOnMobile": false,
+        "_useNumberedPins": false,
+        "_useGraphicsAsPins": false,
+        "_hasStaticTooltips": false,
+        "_isRound": false,
+        "_pinOffsetOrigin": false,
+        "_graphic": {
+            "src": "course/en/images/background.jpg",
+            "alt": "",
+            "attribution": "Copyright © 2024"
+        },
+        "_items": [
+            {
+                "_top": 25,
+                "_left": 25,
+                "title": "Hotspot 1 title",
+                "body": "This is display text 1.",
+                "strapline": "Hotspot 1 strapline",
+                "_imageAlignment": "right",
+                "_comment": "Supported classes = 'hide-desktop-image' | 'hide-popup-image'. Additional classes can be used but they must be predefined in one of the Less files",
+                "_classes": "",
+                "_graphic": {
+                    "src": "course/en/images/hotgraphic-1.jpg",
+                    "alt": "",
+                    "attribution": "Copyright © 2024",
+                    "_classes": ""
+                },
+                "_tooltip": {
+                    "_isEnabled": false,
+                    "text": "{{ariaLabel}}",
+                    "_classes": "",
+                    "_position": ""
+                }
+            },
+            {
+                "_top": 50,
+                "_left": 50,
+                "title": "Hotspot 2 title",
+                "body": "This is display text 2 with a left aligned image.",
+                "strapline": "Hotspot 2 strapline",
+                "_imageAlignment": "left",
+                "_classes": "",
+                "_graphic": {
+                    "src": "course/en/images/hotgraphic-2.jpg",
+                    "alt": "",
+                    "attribution": "",
+                    "_classes": ""
+                },
+                "_tooltip": {
+                    "_isEnabled": false,
+                    "text": "{{ariaLabel}}",
+                    "_classes": "",
+                    "_position": ""
+                }
+            },
+            {
+                "_top": 75,
+                "_left": 75,
+                "title": "Hotspot 3 title",
+                "body": "This is display text 3 with a right aligned image.",
+                "strapline": "Hotspot 3 strapline",
+                "_imageAlignment": "right",
+                "_classes": "",
+                "_graphic": {
+                    "src": "course/en/images/hotgraphic-3.jpg",
+                    "alt": "",
+                    "attribution": "",
+                    "_classes": ""
+                },
+                "_tooltip": {
+                    "_isEnabled": false,
+                    "text": "{{ariaLabel}}",
+                    "_classes": "",
+                    "_position": ""
+                }
+            }
+        ],
+        "_pageLevelProgress": {
+            "_isEnabled": true
+        }
+    }
+
+    // Tile / grid layout
+    // This layout uses graphics as pin "tiles" and lays out the 
+    // item graphics (_items._graphic) in a 2 column grid.
+    // --------------------------------------------------
+    {
+        "_useGraphicsAsPins": true,
+        "_items": [
+            {
+                "title": "Tile 1 title",
+                "body": "This is display text 1.",
+                "strapline": "Tile 1 strapline",
+                "_classes": "",
+                "_graphic": {
+                    "src": "course/en/images/hotgraphic-1.jpg",
+                    "alt": "",
+                    "attribution": "Copyright © 2024",
+                    "_classes": ""
+                },
+                "_tooltip": {
+                    "_isEnabled": false,
+                    "text": "{{ariaLabel}}"
+                }
+            },
+            {
+                "title": "Tile 2 title",
+                "body": "This is display text 2.",
+                "strapline": "Tile 2 strapline",
+                "_classes": "",
+                "_graphic": {
+                    "src": "course/en/images/hotgraphic-2.jpg",
+                    "alt": "",
+                    "attribution": "",
+                    "_classes": ""
+                },
+                "_tooltip": {
+                    "_isEnabled": false,
+                    "text": "{{ariaLabel}}"
+                }
+            }
+        ]
+    }
+
+    // Graphic pins
+    // This layout uses a background image where each pin item
+    // is an image rather than a pin icon.
+    // --------------------------------------------------
+    {
+        "_useGraphicsAsPins": false,
+        "_items": [
+            {
+                "_left": 25,
+                "_top": 25,
+                "title": "Hotspot 1 title",
+                "body": "This is display text 1.",
+                "strapline": "Hotspot 1 strapline",
+                "_imageAlignment": "right",
+                "_classes": "",
+                "_graphic": {
+                    "src": "course/en/images/hotgraphic-1.jpg",
+                    "alt": "",
+                    "attribution": "Copyright © 2024",
+                    "_classes": ""
+                },
+                "_tooltip": {
+                    "_isEnabled": false,
+                    "text": "{{ariaLabel}}",
+                    "_classes": "",
+                    "_position": ""
+                },
+                "_pin": {
+                    "src": "course/en/images/pin.png",
+                    "srcHover": "course/en/images/pin-hover.png",
+                    "srcVisited": "course/en/images/pin-visited.png",
+                    "alt": ""
+                }
+            },
+            {
+                "_left": 50,
+                "_top": 50,
+                "title": "Hotspot 2 title",
+                "body": "This is display text 2.",
+                "strapline": "Hotspot 2 strapline",
+                "_imageAlignment": "right",
+                "_classes": "",
+                "_graphic": {
+                    "src": "course/en/images/hotgraphic-2.jpg",
+                    "alt": "",
+                    "attribution": "",
+                    "_classes": ""
+                },
+                "_tooltip": {
+                    "_isEnabled": false,
+                    "text": "{{ariaLabel}}",
+                    "_classes": "",
+                    "_position": ""
+                },
+                "_pin": {
+                    "src": "course/en/images/pin.png",
+                    "srcHover": "course/en/images/pin-hover.png",
+                    "srcVisited": "course/en/images/pin-visited.png",
+                    "alt": ""
+                }
+            }
+        ]
+    }

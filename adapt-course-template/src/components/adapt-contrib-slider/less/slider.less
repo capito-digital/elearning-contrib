@@ -1,0 +1,203 @@
+@slider-handle-width: 2rem;
+@slider-handle-height: 2rem;
+
+@slider-track-height: .375rem;
+
+.slider {
+  // Labels
+  &__label-container {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  // Numbers
+  &__number-container {
+    position: relative;
+    min-height: 1.5rem;
+    // Indent half the width of the range slider handle either side
+    margin-left: @slider-handle-width / 2;
+    margin-right: @slider-handle-width / 2;
+
+    .dir-rtl & {
+      .transform(rotateY(180deg));
+    }
+  }
+
+  &__number,
+  &__number-selection,
+  &__number-model-answer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    .transform(translateX(-50%));
+
+    .dir-rtl & {
+      .transform(translateX(-50%) rotateY(180deg));
+    }
+  }
+
+  // Correctness state
+  &__state {
+    position: relative;
+    min-height: 1.5rem;
+    // Indent half the width of the range slider handle either side
+    margin-left: @slider-handle-width / 2;
+    margin-right: @slider-handle-width / 2;
+
+    .dir-rtl & {
+      .transform(rotateY(180deg));
+    }
+  }
+
+  &__icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    .transform(translateX(-50%));
+
+    .dir-rtl & {
+      .transform(translateX(-50%) rotateY(180deg));
+    }
+  }
+
+  &__correct-icon .icon {
+    .icon-tick;
+  }
+
+  &__incorrect-icon .icon {
+    .icon-cross;
+  }
+
+  // Scale
+  &__scale-container {
+    position: relative;
+    height: 1px;
+    margin-top: @item-margin * 2;
+    // Indent half the width of the range slider handle either side
+    margin-left: @slider-handle-width / 2;
+    margin-right: @slider-handle-width / 2;
+    background-color: @background;
+  }
+
+  &__scale-notch {
+    position: absolute;
+    top: -5px;
+    height: 10px;
+    width: 1px;
+    .transform(translateX(-50%));
+    background-color: @background;
+  }
+
+  &__scale-notch-start {
+    left: 0;
+  }
+
+  &__scale-notch-end {
+    left: 100%;
+  }
+
+  // Slider bar
+  &__item {
+    position: relative;
+    // Add margin to ensure slider handle does not overlap above / below
+    margin-top: @slider-handle-height * .75;
+    margin-bottom: @slider-handle-height * .75;
+  }
+
+  &__item-input-track,
+  &__item-input-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: @slider-track-height;
+  }
+
+  &__item-input-track {
+    // Reduce width of track by half of slider width either side
+    width: calc(~'100% - @{slider-handle-width}');
+    // Indent half the width of the range slider handle either side
+    margin-left: @slider-handle-width / 2;
+    margin-right: @slider-handle-width / 2;
+    background-color: darken(@background-inverted, 20%);
+
+    .dir-rtl & {
+      .transform(rotateY(180deg));
+    }
+  }
+
+  &__item-input-fill {
+    background-color: @background;
+  }
+
+  // Slider bar input
+  &__item input {
+    position: relative;
+    display: block;
+    height: @slider-track-height;
+    width: 100%;
+    appearance: none;
+    background-color: transparent;
+
+    &:not([disabled]) {
+      cursor: pointer;
+    }
+  }
+
+  // Slider input thumb mixin
+  .slider-thumb() {
+    height: @slider-handle-height;
+    width: @slider-handle-width;
+    background-color: @white;
+    border: 0;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+
+    .is-disabled & {
+      box-shadow: none;
+      background-color: transparent;
+      cursor: default;
+    }
+  }
+
+  // Slider input track mixin
+  .slider-track() {
+    height: @slider-track-height;
+    width: 100%;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  // Handle styling
+  &__item input[type=range]::-webkit-slider-thumb {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    .slider-thumb();
+    appearance: none;
+  }
+
+  &__item input[type=range]::-moz-range-thumb {
+    .slider-thumb();
+  }
+
+  // Track styling
+  &__item input[type=range]::-webkit-slider-runnable-track {
+    .slider-track();
+    appearance: none;
+  }
+
+  &__item input[type=range]::-moz-range-track {
+    .slider-track();
+  }
+
+  // Class to show the correct answers
+  &__widget.show-correct-answer &__number-selection {
+    opacity: 0;
+  }
+}

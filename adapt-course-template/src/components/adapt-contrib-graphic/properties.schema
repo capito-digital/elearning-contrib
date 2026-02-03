@@ -1,0 +1,133 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "$ref": "http://localhost/plugins/content/component/model.schema",
+  "globals": {
+    "ariaRegion": {
+      "type": "string",
+      "required": true,
+      "default": "",
+      "inputType": "Text",
+      "validators": [],
+      "translatable": true
+    },
+    "scrollAriaLabel": {
+      "type": "string",
+      "required": true,
+      "default": "Use the scrollbar to pan the image left and right. {{#if _graphic.alt}}{{_graphic.alt}}{{/if}}",
+      "inputType": "Text",
+      "validators": [],
+      "translatable": true
+    }
+  },
+  "properties": {
+    "_supportedLayout": {
+      "type": "string",
+      "required": true,
+      "enum": ["full-width", "half-width", "both"],
+      "default": "both",
+      "editorOnly": true
+    },
+    "instruction": {
+      "type": "string",
+      "required": false,
+      "default": "",
+      "inputType": "Text",
+      "validators": [],
+      "help": "This is the instruction text",
+      "translatable": true
+    },
+    "_graphic": {
+      "type": "object",
+      "required": true,
+      "title": "Graphic",
+      "properties": {
+        "alt": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "title": "Alternative Text",
+          "inputType": "Text",
+          "validators": [],
+          "help": "A description of the image; required when it has meaning that must be conveyed to the learner. For 'decorative' images, leave this blank.",
+          "translatable": true
+        },
+        "longdescription": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "title": "Long image description",
+          "inputType": "Text",
+          "validators": [],
+          "help": "A long description of the image. This text appear below the image.",
+          "translatable": true
+        },
+        "large": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "inputType": "Asset:image",
+          "validators": ["required"],
+          "help": "The large sized image for desktop devices"
+        },
+        "small": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "inputType": "Asset:image",
+          "validators": ["required"],
+          "help": "The small sized image for mobile devices"
+        },
+        "attribution": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "inputType": "Text",
+          "validators": [],
+          "help": "Text to be displayed as an attribution",
+          "translatable": true
+        },
+        "_url": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "title": "URL",
+          "inputType": "Text",
+          "validators": [],
+          "help": "When the graphic is selected this is the url it will follow."
+        },
+        "_target": {
+          "type": "string",
+          "required": false,
+          "enum": ["", "_blank", "_self", "_parent", "_top"],
+          "default": "_blank",
+          "title": "Target attribute",
+          "inputType": {
+            "type": "Select",
+            "options": ["", "_blank", "_self", "_parent", "_top"]
+          },
+          "validators": [],
+          "help": "This targets where to open the link. Acceptable values are '_blank' (opens the linked document in a new window or tab), '_parent' (opens the linked document in the parent frame), '_top' (opens the linked document in the full body of the window) or '_self' (opens the linked document in the same frame as it was selected. If no value is set, the default is '_blank'."
+        }
+      }
+    },
+    "_isScrollable": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "title": "Enable horizontal scrolling",
+      "inputType": "Checkbox",
+      "validators": []
+    },
+    "_defaultScrollPercent": {
+      "type": "number",
+      "required": false,
+      "default": 0,
+      "title": "Scroll percent",
+      "inputType": "Number",
+      "validators": ["required", "number"],
+      "help": "0 is left most, 50 is in the middle, 100 is right most."
+    }
+  }
+}

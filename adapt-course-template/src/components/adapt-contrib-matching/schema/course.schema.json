@@ -1,0 +1,59 @@
+{
+  "$anchor": "matching-course",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$patch": {
+    "source": {
+      "$ref": "course"
+    },
+    "with": {
+      "properties": {
+        "_globals": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "_components": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "_matching": {
+                  "type": "object",
+                  "title": "Matching",
+                  "default": {},
+                  "properties": {
+                    "ariaRegion": {
+                      "type": "string",
+                      "title": "ARIA region",
+                      "default": "Matching. Select from lists and then submit.",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "correctAnswerPrefix": {
+                      "type": "string",
+                      "title": "ARIA prefix for correct answer",
+                      "description": "If _canShowCorrectness is enabled, this text provides a prefix for the correct option displayed below the submitted question item",
+                      "default": "The correct answer is",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "correctAnswersPrefix": {
+                      "type": "string",
+                      "title": "ARIA prefix for correct answers",
+                      "description": "If _canShowCorrectness is enabled, this text provides a prefix for the comma separated list of correct options displayed below the submitted question item",
+                      "default": "The correct answers are",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

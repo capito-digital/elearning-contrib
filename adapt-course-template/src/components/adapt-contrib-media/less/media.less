@@ -1,0 +1,63 @@
+.media {
+  // Bugfix to prevent resize between poster image and video transition
+  // --------------------------------------------------
+  video {
+    object-fit: fill;
+    object-position: center;
+  }
+  
+  // Transcript
+  // --------------------------------------------------
+  // Skip to transcript button
+  &__skip-to-transcript {
+    margin-bottom: @item-margin;
+
+    html:not(.has-accessibility) & {
+      .u-display-none;
+    }
+
+    .visually-hidden-focusable;
+  }
+
+  // Transcript container
+  &__transcript-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__transcript-btn-icon {
+    margin-inline-start: @icon-padding / 2;
+  }
+
+  &.is-complete &__transcript-btn-icon .icon {
+    .icon-tick;
+  }
+
+  &__transcript-btn-inline .icon {
+    .icon-plus;
+  }
+
+  &__transcript-body-inline {
+    display: none;
+  }
+
+  // External source mejs overrides
+  // --------------------------------------------------
+  &__widget.external-source .mejs__container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__widget.external-source .mejs__container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__widget.external-source .mejs__overlay-play {
+    .u-display-none;
+  }
+}

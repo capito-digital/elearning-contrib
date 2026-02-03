@@ -1,0 +1,431 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "$ref": "http://localhost/plugins/content/component/model.schema",
+  "globals": {
+    "ariaRegion": {
+      "type": "string",
+      "required": true,
+      "default": "Image with selectable areas. Select each button to show more information.",
+      "inputType": "Text",
+      "validators": [],
+      "translatable": true
+    },
+    "item": {
+      "type": "string",
+      "title": "Item count label",
+      "default": "Item {{itemNumber}} of {{totalItems}}",
+      "inputType": "Text",
+      "help": "This is the aria label for each item. Use {{itemNumber}} and {{totalItems}} in your text to tell the user which item they are viewing and how many items there are in total.",
+      "translatable": true
+    },
+    "previous": {
+      "type": "string",
+      "title": "Previous",
+      "default": "{{#if title}}Back to {{{title}}} (item {{itemNumber}} of {{totalItems}}){{else}}{{_globals._accessibility._ariaLabels.previous}}{{/if}}",
+      "inputType": "Text",
+      "translatable": true
+    },
+    "next": {
+      "type": "string",
+      "title": "Next",
+      "default": "{{#if title}}Forward to {{{title}}} (item {{itemNumber}} of {{totalItems}}){{else}}{{_globals._accessibility._ariaLabels.next}}{{/if}}",
+      "inputType": "Text",
+      "translatable": true
+    },
+    "popupPagination": {
+      "type": "string",
+      "required": true,
+      "default": "{{itemNumber}} / {{totalItems}}",
+      "inputType": "Text",
+      "validators": [],
+      "help": "This is the item count displayed in the popup. Use {{itemNumber}} and {{totalItems}} in your text to tell the user which item they are viewing and how many items there are in total.",
+      "translatable": true
+    }
+  },
+  "properties": {
+    "_supportedLayout": {
+      "type": "string",
+      "required": true,
+      "enum": ["full-width", "half-width", "both"],
+      "inputType": {
+        "type": "Select",
+        "options": ["full-width", "half-width", "both"]
+      },
+      "default": "full-width",
+      "editorOnly": true
+    },
+    "instruction": {
+      "type": "string",
+      "required": false,
+      "default": "Select the icons to find out more.",
+      "inputType": "Text",
+      "validators": [],
+      "translatable": true
+    },
+    "_setCompletionOn": {
+      "type": "string",
+      "required": false,
+      "default": "allItems",
+      "title": "Set completion on:",
+      "enum": ["inview", "allItems"],
+      "inputType": {
+        "type": "Select",
+        "options": ["inview", "allItems"]
+      },
+      "validators": [],
+      "help": "Whether completion is based on the learner having viewed all the items - or just having viewed the component"
+    },
+    "_graphic": {
+      "type": "object",
+      "required": false,
+      "title": "Main hotgraphic",
+      "properties": {
+        "src": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "inputType": "Asset:image",
+          "validators": [],
+          "help": "This is the image that appears behind the pins"
+        },
+        "alt": {
+          "type": "string",
+          "required": false,
+          "title": "Alternative text",
+          "default": "",
+          "inputType": "Text",
+          "validators": [],
+          "help": "A description of the image; required when it has meaning that must be conveyed to the learner. For 'decorative' images, leave this blank.",
+          "translatable": true
+        },
+        "attribution": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "inputType": "Text",
+          "validators": [],
+          "help": "Text to be displayed as an attribution",
+          "translatable": true
+        }
+      }
+    },
+    "mobileBody": {
+      "type": "string",
+      "required": false,
+      "default": "",
+      "inputType": "TextArea",
+      "validators": [],
+      "help": "This body text is displayed on mobile devices when this component turns into a Narrative",
+      "translatable": true
+    },
+    "mobileInstruction": {
+      "type": "string",
+      "required": false,
+      "default": "Select the plus icon followed by the next arrow to find out more.",
+      "inputType": "Text",
+      "validators": [],
+      "help": "This instruction text is displayed on mobile devices when this component turns into a Narrative",
+      "translatable": true
+    },
+    "_isNarrativeOnMobile": {
+      "type": "boolean",
+      "required": true,
+      "default": true,
+      "title": "Render as Narrative on mobile?",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If disabled, the Hotgraphic will render a scaled down 'desktop' version (pins over image / tiles) of the component in 'mobile' view instead of being replaced by a Narrative interaction."
+    },
+    "_isMobileTextBelowImage": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "title": "Move text area below image on mobile device",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, on mobile, the text area drops below the image instead of being behind the strapline button. Only applies when the Hot Graphic is configured to render as a Narrative on mobile"
+    },
+    "_isStackedOnMobile": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "title": "Stack images and text on mobile",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, on mobile, text and images will be stacked vertically. No interaction will be required to view all items as the user will simply scroll down. Only applies when the Hot Graphic is configured to render as a Narrative on mobile"
+    },
+    "_hidePagination": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "title": "Hide pagination",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, the progress indicator and previous and next links will not be shown on the popup toolbar"
+    },
+    "_canCycleThroughPagination": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "title": "Cycle through item pagination",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, the popup navigation buttons will cycle continuously through the popup items (i.e. clicking next whilst on the last item will cause the first item to be shown."
+    },
+    "_useNumberedPins": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "title": "Use numbered pins",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, the pin icons will be replaced with the item number. Useful if you want pins to be visited in a set order or show steps in a process."
+    },
+    "_useGraphicsAsPins": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "title": "Use graphics as pins",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, the main graphic will be hidden and pins will be displayed as images which can be positioned using classes"
+    },
+    "_hasStaticTooltips": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "title": "Use static tooltips",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, tooltips (if themselves enabled) will always be shown rather than only on hover."
+    },
+    "_isRound": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "title": "Should item image be round?",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, a 50% border radius will be applied to the items pop up images."
+    },
+    "_pinOffsetOrigin": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "title": "Offset pin origin point",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If set to `true`, the pins origin point will be changed from `top left` to `center`. This option will enable the pin to remain stationary when viewing responsively. The default is `false`."
+    },
+    "_items": {
+      "type": "array",
+      "required": true,
+      "title": "Hot Graphic Pins",
+      "items": {
+        "type": "object",
+        "required": true,
+        "properties": {
+          "title": {
+            "type": "string",
+            "required": true,
+            "default": "",
+            "inputType": "Text",
+            "validators": ["required"],
+            "help": "Title displayed in the popup",
+            "translatable": true
+          },
+          "body": {
+            "type": "string",
+            "required": true,
+            "default": "",
+            "inputType": "TextArea",
+            "validators": ["required"],
+            "help": "Body text displayed in the popup",
+            "translatable": true
+          },
+          "strapline": {
+            "type": "string",
+            "required": true,
+            "default": "",
+            "inputType": "Text",
+            "validators": ["required"],
+            "help": "Strapline - displayed on mobile version only",
+            "translatable": true
+          },
+          "_imageAlignment": {
+            "type": "string",
+            "required": false,
+            "default": "right",
+            "inputType": {"type":"Select", "options":["left","top","right","bottom"]},
+            "title": "Image alignment",
+            "help": "Defines the alignment of the item image in the pop up. Left: Image aligned to the left of the text area. Top: Image aligned above the text area. Right: Image aligned to the right of the text area. Bottom: Image aligned below the text area.The default alignment is `right`."
+          },
+          "_graphic": {
+            "type": "object",
+            "required": true,
+            "title": "Item Graphic",
+            "properties": {
+              "src": {
+                "type": "string",
+                "required": true,
+                "default": "",
+                "inputType": "Asset:image",
+                "validators": ["required"],
+                "help": "Image to be displayed in a popup when this item is selected."
+              },
+              "alt": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "title": "Alternative text",
+                "inputType": "Text",
+                "validators": [],
+                "help": "A description of the image; required when it has meaning that must be conveyed to the learner. For 'decorative' images, leave this blank.",
+                "translatable": true
+              },
+              "attribution": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "inputType": "Text",
+                "validators": [],
+                "help": "Text to be displayed as an attribution for the popup image",
+                "translatable": true
+              },
+              "_classes": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "title": "Graphic Classes",
+                "inputType": "Text",
+                "validators": [],
+                "help": "Allows you to specify custom CSS classes to be applied to the hotgraphic pin or, alternatively, to the hotspot tile when _useGraphicsAsPins is set to true"
+              }
+            }
+          },
+          "_tooltip": {
+            "type": "object",
+            "required": true,
+            "title": "Tooltip",
+            "properties": {
+              "_isEnabled": {
+                "type": "boolean",
+                "required": false,
+                "default": false,
+                "title": "Is enabled?",
+                "inputType": "Checkbox",
+                "validators": [],
+                "help": "If enabled, a tooltip will be displayed on hover over this item. If 'Use static tooltips' is enabled, then tooltips will always be shown."
+              },
+              "text": {
+                "type": "string",
+                "required": false,
+                "default": "{{ariaLabel}}",
+                "title": "Tooltip text",
+                "inputType": "Text",
+                "validators": [],
+                "help": "The tooltip text to display for this item",
+                "translatable": true
+              },
+              "_position": {
+                "type": "string",
+                "required": true,
+                "title": "Tooltip position",
+                "help": "The tooltip position in relation to the pin. Defaults to 'bottom'",
+                "enum": ["top", "top right", "right", "bottom right", "bottom", "bottom left", "left", "top left"],
+                "inputType": {
+                  "type": "Select",
+                  "options": ["top", "top right", "right", "bottom right", "bottom", "bottom left", "left", "top left"]
+                },
+                "default": "bottom",
+                "editorOnly": true
+              },
+              "_classes": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "title": "Tooltip classes",
+                "inputType": "Text",
+                "validators": [],
+                "help": "Allows you to specify custom CSS classes to be applied to the tooltip.",
+                "translatable": false
+              }
+            }
+          },
+          "_pin": {
+            "type": "object",
+            "required": false,
+            "title": "Pin",
+            "properties": {
+              "src": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "inputType": "Asset:image",
+                "validators": [] ,
+                "title": "Pin image (default)",
+                "help": "This is the pin image. Leave blank to use the default icon."
+              },
+              "srcHover": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "inputType": "Asset:image",
+                "validators": [] ,
+                "title": "Pin image (hover)",
+                "help": "This is the pin image hover state  (optional)."
+              },
+              "srcVisited": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "inputType": "Asset:image",
+                "validators": [] ,
+                "title": "Pin image (visited)",
+                "help": "This is the pin image visited state  (optional)."
+              },
+              "alt": {
+                "type": "string",
+                "required": false,
+                "default": "",
+                "inputType": "Text",
+                "validators": [],
+                "help": "A description of the image; required when it has meaning that must be conveyed to the learner. For 'decorative' images, leave this blank.",
+                "translatable": true
+              }
+            }
+          },
+          "_classes": {
+            "type": "string",
+            "required": false,
+            "default": "",
+            "title": "Item Popup Classes",
+            "inputType": "Text",
+            "validators": [],
+            "help": "Allows you to specify custom CSS classes to be applied to the popup item. 'hide-desktop-image' hides the pop up image in desktop view. 'hide-popup-image' hides the pop up image for all screen sizes."
+          },
+          "_left": {
+            "type": "number",
+            "required": true,
+            "default": 0,
+            "title": "Pin Position - Left",
+            "inputType": "Number",
+            "validators": ["required", "number"],
+            "help": "Left position of pin"
+          },
+          "_top": {
+            "type": "number",
+            "required": true,
+            "default": 0,
+            "title": "Pin Position - Top",
+            "inputType": "Number",
+            "validators": ["required", "number"],
+            "help": "Top position of pin"
+          }
+        }
+      }
+    }
+  }
+}

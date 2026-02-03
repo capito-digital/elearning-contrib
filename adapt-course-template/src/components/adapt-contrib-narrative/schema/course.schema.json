@@ -1,0 +1,75 @@
+{
+  "$anchor": "narrative-course",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$patch": {
+    "source": {
+      "$ref": "course"
+    },
+    "with": {
+      "properties": {
+        "_globals": {
+          "type": "object",
+          "default": {},
+          "properties": {
+            "_components": {
+              "type": "object",
+              "default": {},
+              "properties": {
+                "_narrative": {
+                  "type": "object",
+                  "title": "Narrative",
+                  "default": {},
+                  "properties": {
+                    "ariaRegion": {
+                      "type": "string",
+                      "title": "ARIA region",
+                      "default": "Slide show. Select the next button to progress.",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "previous": {
+                      "type": "string",
+                      "title": "Previous",
+                      "default": "{{#if isAtStart}}{{_globals._accessibility._ariaLabels.previous}}{{else}}{{#if title}}Back to {{{title}}}{{else}}{{_globals._accessibility._ariaLabels.previous}}{{/if}} (item {{itemNumber}} of {{totalItems}}){{/if}}",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "next": {
+                      "type": "string",
+                      "title": "Next",
+                      "default": "{{#if isAtEnd}}{{_globals._accessibility._ariaLabels.next}}{{else}}{{#if title}}Forward to {{{title}}}{{else}}{{_globals._accessibility._ariaLabels.next}}{{/if}} (item {{itemNumber}} of {{totalItems}}){{/if}}",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "titleDialog": {
+                      "type": "string",
+                      "title": "Dialog default title",
+                      "help": "Default fallback title to use for dialog popups when not set on an item",
+                      "default": "Item {{itemNumber}} of {{totalItems}}",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    },
+                    "titleStrapline": {
+                      "type": "string",
+                      "title": "Strapline default title",
+                      "help": "Default fallback title to use for strapline buttons when not set on an item",
+                      "default": "Find out more",
+                      "_adapt": {
+                        "translatable": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
