@@ -274,8 +274,9 @@ class BlockNavigation extends Backbone.Controller {
 
     isBlockNavigable(block) {
         const id = block.get('_id');
-        if (id === 'block-content-selector') return false;
-        if (id === 'roleplay-block') return false;
+
+        if (id.startsWith('block-content-selector')) return false;
+        if (id.startsWith('roleplay-block')) return false;
         const cfg = block.get('_blockNavigation');
         // If explicitly disabled
         if (cfg && cfg._isEnabled === false) return false;
