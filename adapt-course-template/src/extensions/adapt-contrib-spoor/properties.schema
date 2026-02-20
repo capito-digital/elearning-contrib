@@ -1,0 +1,392 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "required": false,
+  "properties": {
+    "pluginLocations": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "_spoor": {
+              "type": "object",
+              "required": false,
+              "legend": "Spoor (SCORM)",
+              "properties": {
+                "_isEnabled": {
+                  "type": "boolean",
+                  "required": true,
+                  "default": true,
+                  "title": "Is Enabled",
+                  "inputType": "Checkbox",
+                  "validators": [],
+                  "help": "If enabled, the plugin will try to find and track to a SCORM conformant LMS. Uncheck to switch off SCORM tracking."
+                },
+                "_tracking": {
+                  "type": "object",
+                  "required": false,
+                  "title": "Tracking",
+                  "properties": {
+                    "_shouldStoreResponses": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": true,
+                      "title": "Store question state",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, the user's responses to questions will be saved and restored in each session. Note: this setting should be enabled in the majority of cases."
+                    },
+                    "_shouldStoreAttempts": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "Store question attempt states",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, a history of the user's responses to questions will be saved and restored in each session. Note: this setting should be disabled in the majority of cases."
+                    },
+                    "_shouldRecordInteractions": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": true,
+                      "title": "Record interactions",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, the course will record the user's responses to questions to the cmi.interactions SCORM data fields."
+                    },
+                    "_shouldRecordObjectives": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": true,
+                      "title": "Record objectives",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, the course will be able to record the status and scores of the course objectives to the cmi.objectives SCORM data fields."
+                    },
+                    "_shouldCompress": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "Should compress data",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, the data stored at the lms will be further compressed."
+                    }
+                  }
+                },
+                "_reporting": {
+                  "type": "object",
+                  "required": true,
+                  "title": "Reporting",
+                  "properties": {
+                    "_onTrackingCriteriaMet": {
+                      "type":"string",
+                      "required":true,
+                      "default": "completed",
+                      "title":"Tracking success status",
+                      "enum": ["completed", "passed", "failed", "incomplete"],
+                      "inputType": {
+                        "type": "Select",
+                        "options": ["completed", "passed", "failed", "incomplete"]
+                      },
+                      "validators": [],
+                      "help": "What status to report back to the LMS when the tracking criteria are met."
+                    },
+                    "_onAssessmentFailure": {
+                      "type": "string",
+                      "required": false,
+                      "default": "incomplete",
+                      "title": "Assessment failure status",
+                      "enum": ["completed", "failed", "incomplete"],
+                      "inputType": {
+                        "type": "Select",
+                        "options": ["completed", "failed", "incomplete"]
+                      },
+                      "validators": [],
+                      "help": "What status to report back to the LMS when the assessment is failed."
+                    },
+                    "_resetStatusOnLanguageChange": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "Reset status when language changed?",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, the the course status will be reset to 'incomplete' when the user changes the course language."
+                    }
+                  }
+                },
+                "_advancedSettings": {
+                  "type": "object",
+                  "required": false,
+                  "title": "Advanced Settings",
+                  "properties": {
+                    "_scormVersion": {
+                      "type": "string",
+                      "required": false,
+                      "default": "1.2",
+                      "title": "SCORM version",
+                      "enum": ["1.2", "2004"],
+                      "inputType": {
+                        "type": "Select",
+                        "options": ["1.2", "2004"]
+                      },
+                      "validators": [],
+                      "help": "What SCORM standard to use - SCORM 1.2 or SCORM 2004 4th Edition."
+                    },
+                    "_showDebugWindow": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "SCORM debug window",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, a popup window will be shown on course launch that gives detailed information about what SCORM calls are being made. This can be very useful for debugging SCORM issues. Note that this popup window will appear automatically if the SCORM code encounters an error, even if this is set to false."
+                    },
+                    "_commitOnStatusChange": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": true,
+                      "title": "Commit data on status change",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, a 'commit' call will be made any time the lesson_status is changed."
+                    },
+                    "_commitOnAnyChange": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "Commit data on any change",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, a 'commit' (save all data) call will be made any time a value is changed. Note that enabling this setting may have a detrimental impact on the server and should only be used if absolutely necessary and only after careful load testing. Consider trying a lower value for 'Frequency of automatic commits' before changing this setting."
+                    },
+                    "_timedCommitFrequency": {
+                      "type": "number",
+                      "required": false,
+                      "default": "10",
+                      "title": "Frequency (mins) of automatic commits",
+                      "inputType": "Number",
+                      "validators": ["number"],
+                      "help": "The frequency (in minutes) at which a 'commit' call should be made automatically. Set to 0 to disable automatic commits altogether."
+                    },
+                    "_maxCommitRetries": {
+                      "type": "number",
+                      "required": false,
+                      "default": "5",
+                      "title": "Maximum number of commit retries",
+                      "inputType": "Number",
+                      "validators": ["number"],
+                      "help": "If a 'commit' call fails, this setting controls how many times it should be retried before giving up and throwing an error."
+                    },
+                    "_commitRetryDelay": {
+                      "type": "number",
+                      "required": false,
+                      "default": "2000",
+                      "title": "Commit retry delay",
+                      "inputType": "Number",
+                      "validators": ["number"],
+                      "help": "How much of a delay (in milliseconds) to leave between commit retries."
+                    },
+                    "_suppressErrors": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "Supress LMS errors",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, error messages will not be displayed when SCORM tracking problems occur."
+                    },
+                    "_commitOnVisibilityChangeHidden": {
+                      "type": "boolean",
+                      "default": true,
+                      "title": "Commit on visibility change hidden",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, a 'commit' call will be made whenever the course window is hidden/minimised. Requires a browser that supports the 'visibilitychange' event."
+                    },
+                    "_manifestIdentifier": {
+                      "type": "string",
+                      "required": true,
+                      "default": "adapt_manifest",
+                      "title": "Manifest identifier",
+                      "inputType": "Text",
+                      "validators": ["required"],
+                      "help": "Sets the 'identifier' attribute in the imsmanifest.xml"
+                    },
+                    "_exitStateIfIncomplete": {
+                      "type": "string",
+                      "required": false,
+                      "default": "auto",
+                      "title": "Exit state if incomplete",
+                      "enum": ["auto", "suspend", "normal", ""],
+                      "inputType": {
+                        "type": "Select",
+                        "options": [
+                          "auto",
+                          "suspend",
+                          "normal",
+                          {
+                            "val": "",
+                            "label": "'' (empty string)"
+                          }
+                        ]
+                      },
+                      "validators": [],
+                      "help": "What exit status to use if the course is incomplete."
+                    },
+                    "_exitStateIfComplete": {
+                      "type": "string",
+                      "required": false,
+                      "default": "auto",
+                      "title": "Exit state if complete",
+                      "enum": ["auto", "suspend", "normal", ""],
+                      "inputType": {
+                        "type": "Select",
+                        "options": [
+                          "auto",
+                          "suspend",
+                          "normal",
+                          {
+                            "val": "",
+                            "label": "'' (empty string)"
+                          }
+                        ]
+                      },
+                      "validators": [],
+                      "help": "What exit status to use if the course is complete."
+                    },
+                    "_setCompletedWhenFailed": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": true,
+                      "title": "Completed when failed",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, `cmi.completion_status` will be set to \"completed\" if the assessment is \"failed\". Only valid for SCORM 2004, where the logic for completion and success is separate."
+                    },
+                    "_maxCharLimitOverride": {
+                      "type": "number",
+                      "required": false,
+                      "default": "0",
+                      "title": "Override value for maximum character limit on fill-in type answers",
+                      "inputType": "Number",
+                      "validators": ["number"],
+                      "help": "If your LMS allows it, you may set a value to override the default character limit for fill-in answers (250 for SCORM2004, 255 for SCORM1.2)."
+                    },
+                    "_connectionTest": {
+                      "type": "object",
+                      "required": true,
+                      "title": "Connection Test",
+                      "properties": {
+                        "_isEnabled": {
+                          "type": "boolean",
+                          "default": true,
+                          "title": "Is Enabled",
+                          "inputType": "Checkbox",
+                          "validators": [],
+                          "help": "Determines whether the connection should be tested."
+                        },
+                        "_testOnSetValue": {
+                          "type": "boolean",
+                          "default": true,
+                          "title": "Test on set value",
+                          "inputType": "Checkbox",
+                          "validators": [],
+                          "help": "Determines whether the connection should be tested for each call to set data on the LMS."
+                        },
+                        "_silentRetryLimit": {
+                          "type": "number",
+                          "required": false,
+                          "default": "2",
+                          "title": "Silent Retry Limit",
+                          "inputType": "Number",
+                          "validators": ["number"],
+                          "help": "The limit for silent retry attempts to establish a connection before raising an error."
+                        },
+                        "_silentRetryDelay": {
+                          "type": "number",
+                          "required": false,
+                          "default": "1000",
+                          "title": "Silent Retry Delay",
+                          "inputType": "Number",
+                          "validators": ["number"],
+                          "help": "The interval in milliseconds between silent connection retries."
+                        }
+                      }
+                    },
+                    "_uniqueInteractionIds": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "Unique Interaction Ids",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, `cmi.interactions.n.id` will be prepended with an index, making the id unique. Some LMSes require unique ids, this will inhibit the grouping of interactions by id on the server-side."
+                    }
+                  }
+                },
+                "_showCookieLmsResetButton": {
+                  "type": "boolean",
+                  "required": false,
+                  "default": false,
+                  "title": "Show reset button (scorm_test_harness.html only)",
+                  "inputType": "Checkbox",
+                  "validators": [],
+                  "help": "If enabled, a reset button will be available to relaunch the course and optionally clear tracking data (scorm_test_harness.html only)."
+                },
+                "_shouldPersistCookieLMSData": {
+                  "type": "boolean",
+                  "required": false,
+                  "default": true,
+                  "title": "Persist cookie data (scorm_test_harness.html only)",
+                  "inputType": "Checkbox",
+                  "validators": [],
+                  "help": "If enabled, the course data will persist over browser sessions (scorm_test_harness.html only)."
+                }
+              }
+            }
+          }
+        },
+        "course": {
+          "type":"object",
+          "properties": {
+            "_spoor": {
+              "type": "object",
+              "required": false,
+              "legend": "Spoor (SCORM)",
+              "properties": {
+                "_messages": {
+                  "type": "object",
+                  "default": {},
+                  "title": "Error messages",
+                  "inputType": {
+                    "type": "CodeEditor",
+                    "mode": "json"
+                  },
+                  "validators": [],
+                  "help": "Optional object that can be used to amend/translate the error messages shown by the spoor extension"
+                }
+              }
+            }
+          }
+        },
+        "contentobject": {
+          "type":"object"
+        },
+        "article": {
+          "type":"object"
+        },
+        "block": {
+          "type":"object"
+        },
+        "component": {
+          "type":"object"
+        }
+      }
+    }
+  }
+}
