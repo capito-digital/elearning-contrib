@@ -33,9 +33,9 @@ export default class CapitoBadgesView extends ComponentView {
 
     async loadBadges() {
         if (this.badgesLoaded) return;
-        const menuContainer = document.getElementsByClassName('page-' + this.courseId);
-        if (!menuContainer) {
-            console.log('menuContainer not found');
+        const menuContainers = document.getElementsByClassName(`page-course-id-${this.courseId}`);
+        if (!menuContainers || menuContainers.length === 0) {
+            console.log('no menuContainers found');
             return;
         }
 
@@ -68,23 +68,52 @@ export default class CapitoBadgesView extends ComponentView {
             }
 
             const data = await response.json();
-            
-            if (data.badges && data.badges.length > 0) {
-                let html = '';
-                html += '<p>Sie haben diesen Kurs bereits gemacht und dabei diese Abzeichen bekommen:</p>';
 
-                data.badges.forEach(badge => {
-                    const imgUrl = `assets/${badge.locale}_${badge.level}.png`;
-                    html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
+            // New response shape: { pages: [{ page_id, page_title, badges: [...] }] }
+            const pages = Array.isArray(data.pages) ? data.pages : [];
+
+            // Build HTML only if there is at least one badge across all pages
+            const totalBadges = pages.reduce((sum, p) => sum + (Array.isArray(p.badges) ? p.badges.length : 0), 0);
+            let badges_per_page_disabled = pages.length === 1 && !pages[0].page_id;
+            let base_html = badges_per_page_disabled
+                ? '<p>Sie haben diesen Kurs bereits gemacht und dabei diese Abzeichen bekommen:</p>'
+                : '<p>Sie haben diesen Teil des Kurses bereits gemacht und dabei diese Abzeichen bekommen:</p>';
+
+            if (totalBadges > 0) {
+                pages.forEach(page => {
+                    const badges = Array.isArray(page.badges) ? page.badges : [];
+                    if (badges.length === 0) {
+                        return;
+                    }
+
+                    let html = base_html;
+
+                    html += '<div class="cs-badges">';
+                    badges.forEach(badge => {
+                        const imgUrl = `assets/${badge.locale}_${badge.level}.png`;
+                        html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
+                    });
+                    html += '</div>';
+                    let target = badges_per_page_disabled
+                        ? document.getElementsByClassName("menu__item-container boxmenu__item-container")[0]
+                        : menuContainers.getElementsByClassName(`page-id-${page.id}`)[0].firstChild;
+
+                    let more_badges_possible = badges.filter(badge => badge.level == "gold" && badge.locale == "Deutsch").length == 0;
+                    if (more_badges_possible) {
+                        html += '<p>Sie können den Kurs nochmal machen um noch mehr Abzeichen zu bekommen.</p>';
+                    }
+                    if (target) {
+                        const badgesDiv = document.createElement('div');
+                        badgesDiv.className = 'cs-badges';
+                        badgesDiv.innerHTML = html;
+                        target.insertBefore(badgesDiv, target.firstChild);
+                    } else {
+                        console.error('capitoBadgesView: Failed to find target element for badges:', page.id);
+                    }
                 });
-                html += '<p>Sie können den Kurs nochmal machen um noch mehr Abzeichen zu bekommen.</p>';
-                let target = menuContainer[0].querySelector('.menu-item__details-inner');
-                if (target) {
-                    const badgesDiv = document.createElement('div');
-                    badgesDiv.className = 'cs-badges';
-                    badgesDiv.innerHTML = html;
-                    target.insertBefore(badgesDiv, target.firstChild);
-                }
+
+                console.log(menuContainers)
+
             }
             this.badgesLoaded = true;
         } catch (error) {

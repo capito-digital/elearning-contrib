@@ -11,9 +11,11 @@ class CapitoBadges extends Backbone.Controller {
         // Listen to selection changes emitted by ContentSelectorView
         this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onSelectionChanged);
         // Cache assessment results when an assessment completes
-        this.listenTo(Adapt, 'assessment:complete', this.onAssessmentComplete);
+        this.listenTo(Adapt, 'assessments:complete', this.onAssessmentComplete);
         // Submit cached data when the user completes the course flow via blockNavigation
-        this.listenTo(Adapt, 'blockNavigation:complete', this.onBlockNavigationComplete);
+        this.listenTo(Adapt, 'blockNavigation:c' +
+            'omplete', this.onBlockNavigationComplete);
+
     }
 
     getConfig() {
@@ -27,9 +29,10 @@ class CapitoBadges extends Backbone.Controller {
     }
 
     showView() {
-        const config = this.getConfig();
+        const config = this.getGlobalConfig();
         config['_userId'] = this.getUserId();
         config['_baseUrl'] = this.getGlobalConfig()['_dashboardBaseUrl'];
+        config['_courseId'] = this.getGlobalConfig()['_courseId'];
         const view = new CapitoBadgesView({
             model: new Backbone.Model(config)
         });
@@ -47,6 +50,7 @@ class CapitoBadges extends Backbone.Controller {
         console.log('Plugin has loaded and data is ready');
         this.showView();
         this.loadEarnedBadges();
+        this.courseId = this.getGlobalConfig()['_courseId']
     }
 
     onSelectionChanged(payload) {
@@ -95,7 +99,6 @@ class CapitoBadges extends Backbone.Controller {
     }
 
     gatherAssessmentTrackingData(stateObject) {
-        const config = this.getConfig();
         const trackingData = {
             assessmentId: stateObject?.id,
             score: stateObject?.score,
@@ -107,7 +110,7 @@ class CapitoBadges extends Backbone.Controller {
             questions: [],
             locale: this.currentSelection?.locale,
             proficiency: this.currentSelection?.proficiency,
-            course_id: config._courseId,
+            course_id: this.courseId,
             user_id: this.getUserId()
         };
 
@@ -144,7 +147,6 @@ class CapitoBadges extends Backbone.Controller {
             lms_user_id: trackingData.user_id || 'anonymous',
             locale: trackingData.locale,
             proficiency: trackingData.proficiency,
-            score_as_percent: trackingData.scoreAsPercent || 0,
             questions: trackingData.questions.map(q => ({
                 question_id: q.questionId,
                 correct: q.isCorrect,
