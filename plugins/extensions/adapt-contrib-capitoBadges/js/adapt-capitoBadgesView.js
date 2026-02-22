@@ -94,9 +94,11 @@ export default class CapitoBadgesView extends ComponentView {
                         html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
                     });
                     html += '</div>';
-                    let target = badges_per_page_disabled
+                    const target = badges_per_page_disabled
                         ? document.getElementsByClassName("menu__item-container boxmenu__item-container")[0]
-                        : menuContainers.getElementsByClassName(`page-id-${page.id}`)[0].firstChild;
+                        : Array.from(menuContainers).filter((el) =>
+                            el.classList.contains(`page-id-${page.id}`)
+                        )[0].firstChild;
 
                     let more_badges_possible = badges.filter(badge => badge.level == "gold" && badge.locale == "Deutsch").length == 0;
                     if (more_badges_possible) {

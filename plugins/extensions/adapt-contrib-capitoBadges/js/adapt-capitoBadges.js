@@ -13,8 +13,7 @@ class CapitoBadges extends Backbone.Controller {
         // Cache assessment results when an assessment completes
         this.listenTo(Adapt, 'assessments:complete', this.onAssessmentComplete);
         // Submit cached data when the user completes the course flow via blockNavigation
-        this.listenTo(Adapt, 'blockNavigation:c' +
-            'omplete', this.onBlockNavigationComplete);
+        this.listenTo(Adapt, 'blockNavigation:complete', this.onBlockNavigationComplete);
 
     }
 
@@ -31,6 +30,7 @@ class CapitoBadges extends Backbone.Controller {
     showView() {
         const config = this.getGlobalConfig();
         config['_userId'] = this.getUserId();
+        config['_userName'] = this.getUserDisplayName();
         config['_baseUrl'] = this.getGlobalConfig()['_dashboardBaseUrl'];
         config['_courseId'] = this.getGlobalConfig()['_courseId'];
         const view = new CapitoBadgesView({
@@ -89,11 +89,87 @@ class CapitoBadges extends Backbone.Controller {
         }
     }
 
+    /**
+     * @typedef {"1.2" | "2004"} ScormVersion
+     */
+
+    /**
+     * @typedef {{ LMSGetValue(key: string): string }} Scorm12Api
+     */
+
+    /**
+     * @typedef {{ GetValue(key: string): string }} Scorm2004Api
+     */
+
+    /**
+     * @typedef {{ api: Scorm12Api, version: "1.2" } | { api: Scorm2004Api, version: "2004" }} ScormApiFound
+     */
+
+    /**
+     * Find the SCORM runtime API in the current window/frame hierarchy.
+     * Works for both SCORM 1.2 (API) and SCORM 2004 (API_1484_11).
+     * @param {Window} win
+     * @returns {ScormApiFound | null}
+     */
+    findScormApi(win = window) {
+        const maxDepth = 50;
+        let cur = win;
+
+        for (let i = 0; i < maxDepth; i++) {
+            try {
+                if (cur?.API_1484_11) return { api: cur.API_1484_11, version: "2004" };
+                if (cur?.API) return { api: cur.API, version: "1.2" };
+
+                if (cur?.parent && cur.parent !== cur) cur = cur.parent;
+                else break;
+            } catch (e) {
+                break;
+            }
+        }
+
+        // sometimes it’s in the opener
+        try {
+            if (win.opener) return this.findScormApi(win.opener);
+        } catch (e) {
+            // ignore cross-origin / access errors
+        }
+
+        return null;
+    }
+
+    /**
+     * Get a value from SCORM (either 1.2 or 2004). Returns null if missing/empty.
+     * @param {string} key
+     * @param {Window} win
+     * @returns {string | null}
+     */
+    scormGet(key, win = window) {
+        const found = this.findScormApi(win);
+        if (!found) return null;
+
+        const value = found.version === "2004"
+            ? found.api.GetValue(key)
+            : found.api.LMSGetValue(key);
+
+        return value === "" ? null : value;
+    }
+
     getUserId() {
         try {
-            return pipwerks.SCORM.get("cmi.core.student_id")
+            // Prefer SCORM 2004, fallback to SCORM 1.2
+            return this.scormGet("cmi.learner_id") ?? this.scormGet("cmi.core.student_id") ?? undefined;
         } catch (err) {
-            console.log("SCORM not available, either in anonymous course, or not in SCORM mode.")
+            console.log("SCORM not available, either in anonymous course, or not in SCORM mode.");
+        }
+        return undefined;
+    }
+
+    getUserDisplayName() {
+        try {
+            // Prefer SCORM 2004, fallback to SCORM 1.2
+            return this.scormGet("cmi.learner_name") ?? this.scormGet("cmi.core.student_name") ?? undefined;
+        } catch (err) {
+            console.log("SCORM not available, either in anonymous course, or not in SCORM mode.");
         }
         return undefined;
     }
@@ -111,7 +187,8 @@ class CapitoBadges extends Backbone.Controller {
             locale: this.currentSelection?.locale,
             proficiency: this.currentSelection?.proficiency,
             course_id: this.courseId,
-            user_id: this.getUserId()
+            user_id: this.getUserId(),
+            user_name: this.getUserDisplayName()
         };
 
         // Gather question-level data
