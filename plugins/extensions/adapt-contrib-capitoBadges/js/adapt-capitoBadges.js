@@ -62,28 +62,21 @@ class CapitoBadges extends Backbone.Controller {
     }
 
     onAssessmentComplete(stateObject) {
-        // Cache the latest assessment state but DO NOT submit yet
+        // Send chapter progress as soon as the assessment completes
         try {
-            this._lastAssessmentState = stateObject;
-            this._lastTrackingData = this.gatherAssessmentTrackingData(stateObject);
-            console.log('capitoBadges: cached assessment results for deferred submit');
+            const trackingData = this.gatherAssessmentTrackingData(stateObject);
+            this.sendTrackingData(trackingData, { complete: false });
+            console.log('capitoBadges: sent chapter assessment results');
         } catch (e) {
-            console.error('capitoBadges: failed to cache assessment data', e);
+            console.error('capitoBadges: failed to submit assessment data', e);
         }
     }
 
     onBlockNavigationComplete() {
-        // Submit cached tracking data when the user clicks "Abschließen"
+        // Submit completion flag when the user clicks "Abschließen"
         try {
-            if (this._lastTrackingData) {
-                this.sendTrackingData(this._lastTrackingData);
-            } else if (this._lastAssessmentState) {
-                // Fallback: build now if only state was cached
-                const trackingData = this.gatherAssessmentTrackingData(this._lastAssessmentState);
-                this.sendTrackingData(trackingData);
-            } else {
-                console.warn('capitoBadges: no assessment data available to submit on completion');
-            }
+            const trackingData = this.buildCompletionTrackingData();
+            this.sendTrackingData(trackingData, { complete: true });
         } catch (e) {
             console.error('capitoBadges: failed to submit on blockNavigation:complete', e);
         }
@@ -195,26 +188,42 @@ class CapitoBadges extends Backbone.Controller {
         if (stateObject?.questions && stateObject?.questionModels) {
             const questions = stateObject.questions;
             const questionModels = stateObject.questionModels.models || [];
+            const questionMap = new Map();
 
             questions.forEach((question, idx) => {
                 const questionModel = questionModels[idx];
                 if (questionModel) {
+                    const questionId = questionModel.get('_questionId') || questionModel.get('_id');
                     const questionData = {
-                        questionId: questionModel.get('_questionId'),
+                        questionId,
                         componentId: questionModel.get('_id'),
                         componentType: questionModel.get('_component'),
                         isCorrect: question._isCorrect,
                         score: question.score || 0,
                         maxScore: question.maxScore || 0
                     };
-                    trackingData.questions.push(questionData);
+                    if (questionId) {
+                        questionMap.set(questionId, questionData);
+                    }
                 }
             });
+            trackingData.questions = Array.from(questionMap.values());
         }
         return trackingData;
     }
 
-    async sendTrackingData(trackingData) {
+    buildCompletionTrackingData() {
+        return {
+            questions: [],
+            locale: this.currentSelection?.locale,
+            proficiency: this.currentSelection?.proficiency,
+            course_id: this.courseId,
+            user_id: this.getUserId(),
+            user_name: this.getUserDisplayName()
+        };
+    }
+
+    async sendTrackingData(trackingData, { complete = false } = {}) {
         const globals = this.getGlobalConfig();
         const baseUrl = globals._dashboardBaseUrl || Adapt.config.dashboardBaseUrl;
         const courseId = trackingData.course_id;
@@ -224,12 +233,15 @@ class CapitoBadges extends Backbone.Controller {
             lms_user_id: trackingData.user_id || 'anonymous',
             locale: trackingData.locale,
             proficiency: trackingData.proficiency,
-            questions: trackingData.questions.map(q => ({
+            complete
+        };
+        if (!complete) {
+            body.questions = trackingData.questions.map(q => ({
                 question_id: q.questionId,
                 correct: q.isCorrect,
                 user_answer: null // Not captured by current gatherAssessmentTrackingData
-            }))
-        };
+            }));
+        }
 
         let sessionToken = localStorage.getItem('capito_session_token');
         const headers = {
@@ -266,19 +278,21 @@ class CapitoBadges extends Backbone.Controller {
             if (data.status === 'completed') {
                 html += '<div class="alert alert-success">';
                 html += '<h3>Gratulation! Sie haben den Kurs abgeschlossen!</h3>';
-                html += '<p>Sie haben folgende Abzeichen erhalten:</p>';
-                html += '<div class="cs-badges">';
-                data.earned_badges.forEach(badge => {
-                    const imgUrl = `assets/${badge.locale}_${badge.level}${badge.is_new ? "_new" : ""}.png`;
-                    html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
-                });
-                html += '</div>';
+                if (data.earned_badges.length > 0) {
+                    html += '<p>Sie haben folgende Abzeichen erhalten:</p>';
+                    html += '<div class="cs-badges">';
+                    data.earned_badges.forEach(badge => {
+                        const imgUrl = `assets/${badge.locale}_${badge.level}${badge.is_new ? "_new" : ""}.png`;
+                        html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
+                    });
+                    html += '</div>';
+                }
                 const hasGoldGerman = data.earned_badges.some(b => b.locale === 'de' && b.level === 'gold');
                 if (!hasGoldGerman) {
                     html += '<p>Sie können den Kurs noch einmal machen. Dann können Sie noch mehr Abzeichen bekommen.</p>';
                 }
                 html += '</div>';
-            } else {
+            } else if (complete) {
                 html += '<div class="alert alert-info">';
                 html += '<h3>Fortschritt gespeichert</h3>';
                 html += '<p>Ihre Antworten wurden gespeichert. Machen Sie weiter, um den Kurs abzuschließen.</p>';
@@ -293,7 +307,7 @@ class CapitoBadges extends Backbone.Controller {
                     .cs-badges img { max-width: 100%; height: auto; display: block; }
                 </style>
             `;
-            
+
             // Ask ContentSelectorView to show the dialog with provided HTML
             Adapt.trigger('capitoBadges:showDialog', html + style);
         } catch (error) {

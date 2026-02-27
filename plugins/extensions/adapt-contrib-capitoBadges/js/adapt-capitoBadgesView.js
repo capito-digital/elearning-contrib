@@ -80,24 +80,33 @@ export default class CapitoBadgesView extends ComponentView {
                 : '<p>Sie haben diesen Teil des Kurses bereits gemacht und dabei diese Abzeichen bekommen:</p>';
 
             if (totalBadges > 0) {
+                const style = `
+                    <style>
+                        .cs-badges-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+                        .cs-badge { display: flex; flex-direction: column; align-items: center; text-align: center; }
+                        .cs-badge img { min-width: auto; width: auto; height: auto; max-height: 120px; display: block; }
+                        @media (max-width: 900px) { .cs-badges-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+                        @media (max-width: 600px) { .cs-badges-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+                    </style>
+                `;
                 pages.forEach(page => {
                     const badges = Array.isArray(page.badges) ? page.badges : [];
                     if (badges.length === 0) {
                         return;
                     }
 
-                    let html = base_html;
+                    let html = style + base_html;
 
-                    html += '<div class="cs-badges">';
+                    html += '<div class="cs-badges-grid">';
                     badges.forEach(badge => {
                         const imgUrl = `assets/${badge.locale}_${badge.level}.png`;
-                        html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
+                        html += `<div class="cs-badge"><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
                     });
                     html += '</div>';
                     const target = badges_per_page_disabled
                         ? document.getElementsByClassName("menu__item-container boxmenu__item-container")[0]
                         : Array.from(menuContainers).filter((el) =>
-                            el.classList.contains(`page-id-${page.id}`)
+                            el.classList.contains(`page-id-${page.page_id}`)
                         )[0].firstChild;
 
                     let more_badges_possible = badges.filter(badge => badge.level == "gold" && badge.locale == "Deutsch").length == 0;
@@ -106,7 +115,7 @@ export default class CapitoBadgesView extends ComponentView {
                     }
                     if (target) {
                         const badgesDiv = document.createElement('div');
-                        badgesDiv.className = 'cs-badges';
+                        badgesDiv.className = 'cs-badges-container';
                         badgesDiv.innerHTML = html;
                         target.insertBefore(badgesDiv, target.firstChild);
                     } else {
