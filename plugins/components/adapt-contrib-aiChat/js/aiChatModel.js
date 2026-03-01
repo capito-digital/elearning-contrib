@@ -62,7 +62,8 @@ class AiChatModel extends QuestionModel {
             const response = await fetch(`${baseUrl}/public/v1/ai-chat`, {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(requestBody),
+                credentials: 'include'
             });
 
             if (!response.ok) {
