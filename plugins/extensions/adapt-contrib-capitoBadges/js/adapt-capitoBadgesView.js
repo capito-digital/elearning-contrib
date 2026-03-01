@@ -107,7 +107,7 @@ export default class CapitoBadgesView extends ComponentView {
                         ? document.getElementsByClassName("menu__item-container boxmenu__item-container")[0]
                         : Array.from(menuContainers).filter((el) =>
                             el.classList.contains(`page-id-${page.page_id}`)
-                        )[0].firstChild;
+                        )[0].querySelector('.boxmenu-item__progress');
 
                     let more_badges_possible = badges.filter(badge => badge.level == "gold" && badge.locale == "Deutsch").length == 0;
                     if (more_badges_possible) {

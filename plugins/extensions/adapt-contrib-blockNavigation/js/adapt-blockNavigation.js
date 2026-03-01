@@ -48,6 +48,8 @@ class BlockNavigation extends Backbone.Controller {
 
         // Listen for Adapt popup openings (e.g., hotgraphic popups) to drive TTS by item index
         this.listenTo(Adapt, 'popup:opened', this._checkPopupReadable);
+        // Listen for hotgraphic item changes within the popup
+        this.listenTo(Adapt, 'hotgraphic:popupItemChanged', this._onHotgraphicPopupItemChanged);
 
         // Explanations feature: delegated handlers
         this._onExplClick = this._onExplClick?.bind ? this._onExplClick.bind(this) : (e) => this._onExplClick(e);
@@ -66,7 +68,9 @@ class BlockNavigation extends Backbone.Controller {
 
         // Ensure chat is created early and persists across pages
         this._ensureChat();
-        Adapt.trigger('blockNavigation:initialized');
+        // Expose instance for other components that need currentSelection
+        Adapt.blockNavigation = this;
+        Adapt.trigger('blockNavigation:initialized', {instance: this});
 
         // Initialize content selector state early so visibility is applied even before UI attaches
         try {
@@ -101,6 +105,19 @@ class BlockNavigation extends Backbone.Controller {
             }
         } catch (e) {
             console.warn('[blockNavigation] failed to process popup:opened for TTS', e);
+        }
+    }
+
+    _onHotgraphicPopupItemChanged(payload) {
+        try {
+            const index = payload?.index;
+            if (index === undefined || index === null || Number.isNaN(index) || index < 0) return;
+            this._lastHotgraphicIndex = index;
+            if (this.ttsEnabled) {
+                this._playTTSForCurrentBlock(index);
+            }
+        } catch (e) {
+            console.warn('[blockNavigation] failed to process hotgraphic:popupItemChanged for TTS', e);
         }
     }
 
@@ -303,6 +320,7 @@ class BlockNavigation extends Backbone.Controller {
         this.currentSelection = {locale: sel.locale, proficiency: sel.proficiency};
         this._applyCsVisibilityCSS();
         // Broadcast once so other features (e.g., explanations) can initialize
+        Adapt.set('_contentSelectorSelection', {...this.currentSelection});
         Adapt.trigger('contentSelector:selectionChanged', {...this.currentSelection});
     }
 
@@ -488,6 +506,7 @@ class BlockNavigation extends Backbone.Controller {
         this.currentSelection = {locale: loc, proficiency: prof};
         this._storeSelection(this.currentSelection);
         this._applyCsVisibilityCSS();
+        Adapt.set('_contentSelectorSelection', {...this.currentSelection});
         // Update toggle icon
         if (this._cs.toggleEl) {
             const img = this._cs.toggleEl.querySelector('img');

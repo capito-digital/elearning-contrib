@@ -5,7 +5,8 @@ import Adapt from 'core/js/adapt';
 function injectStyles() {
     if (document.getElementById('stt-widget-styles')) return;
     const css = `
-    .stt-wrap { position: relative; }
+    .stt-wrap { position: relative; width: 100%; }
+    .stt-wrap > textarea { width: 100%; }
     .stt-overlay {
       position: absolute;
       z-index: 2;

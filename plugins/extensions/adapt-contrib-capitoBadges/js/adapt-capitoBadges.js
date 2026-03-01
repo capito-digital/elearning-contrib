@@ -1,5 +1,6 @@
 import Adapt from 'core/js/adapt';
 // import Backbone from 'backbone';
+import location from 'core/js/location';
 import CapitoBadgesView from './adapt-capitoBadgesView';
 
 class CapitoBadges extends Backbone.Controller {
@@ -65,7 +66,7 @@ class CapitoBadges extends Backbone.Controller {
         // Send chapter progress as soon as the assessment completes
         try {
             const trackingData = this.gatherAssessmentTrackingData(stateObject);
-            this.sendTrackingData(trackingData, { complete: false });
+            this.sendTrackingData(trackingData, {complete: false});
             console.log('capitoBadges: sent chapter assessment results');
         } catch (e) {
             console.error('capitoBadges: failed to submit assessment data', e);
@@ -76,7 +77,7 @@ class CapitoBadges extends Backbone.Controller {
         // Submit completion flag when the user clicks "Abschließen"
         try {
             const trackingData = this.buildCompletionTrackingData();
-            this.sendTrackingData(trackingData, { complete: true });
+            this.sendTrackingData(trackingData, {complete: true});
         } catch (e) {
             console.error('capitoBadges: failed to submit on blockNavigation:complete', e);
         }
@@ -110,8 +111,8 @@ class CapitoBadges extends Backbone.Controller {
 
         for (let i = 0; i < maxDepth; i++) {
             try {
-                if (cur?.API_1484_11) return { api: cur.API_1484_11, version: "2004" };
-                if (cur?.API) return { api: cur.API, version: "1.2" };
+                if (cur?.API_1484_11) return {api: cur.API_1484_11, version: "2004"};
+                if (cur?.API) return {api: cur.API, version: "1.2"};
 
                 if (cur?.parent && cur.parent !== cur) cur = cur.parent;
                 else break;
@@ -167,7 +168,14 @@ class CapitoBadges extends Backbone.Controller {
         return undefined;
     }
 
+    getCurrentPageId() {
+        const pageId = location?._contentType === 'page' ? location._currentId : location?._lastVisitedPage;
+        return typeof pageId === 'string' ? pageId.replace(/^page-/, '') : pageId;
+    }
+
     gatherAssessmentTrackingData(stateObject) {
+        const pageId = stateObject?.pageId;
+        const pageIdValue = typeof pageId === 'string' ? pageId.replace(/^page-/, '') : pageId;
         const trackingData = {
             assessmentId: stateObject?.id,
             score: stateObject?.score,
@@ -180,6 +188,7 @@ class CapitoBadges extends Backbone.Controller {
             locale: this.currentSelection?.locale,
             proficiency: this.currentSelection?.proficiency,
             course_id: this.courseId,
+            page_id: pageIdValue,
             user_id: this.getUserId(),
             user_name: this.getUserDisplayName()
         };
@@ -219,20 +228,22 @@ class CapitoBadges extends Backbone.Controller {
             proficiency: this.currentSelection?.proficiency,
             course_id: this.courseId,
             user_id: this.getUserId(),
-            user_name: this.getUserDisplayName()
+            user_name: this.getUserDisplayName(),
+            page_id: this.getCurrentPageId()
         };
     }
 
-    async sendTrackingData(trackingData, { complete = false } = {}) {
+    async sendTrackingData(trackingData, {complete = false} = {}) {
         const globals = this.getGlobalConfig();
         const baseUrl = globals._dashboardBaseUrl || Adapt.config.dashboardBaseUrl;
         const courseId = trackingData.course_id;
-        
+
         // Prepare request body according to TrackProgressRequest
         const body = {
             lms_user_id: trackingData.user_id || 'anonymous',
             locale: trackingData.locale,
             proficiency: trackingData.proficiency,
+            page_id: trackingData.page_id,
             complete
         };
         if (!complete) {
@@ -271,13 +282,23 @@ class CapitoBadges extends Backbone.Controller {
             }
 
             const data = await response.json();
-            
+
             // Build simple HTML from JSON response for the dialog
             // In the future, we might want to use a template for this
             let html = '';
+
+            // Inject basic styles if not present (simplified for now)
+            const style = `
+                <style>
+                    .cs-badges { display: flex; flex-wrap: wrap; gap: 16px; }
+                    .cs-badges > div { width: 120px; text-align: center; display: flex; flex-direction: column; align-items: center; background: white; border-radius: 10px; padding: 5px 0; }
+                    .cs-badges img { max-width: 100%; height: auto; display: block; }
+                </style>
+            `;
+            const more_lessons_available = data.more_lessons_available || false;
             if (data.status === 'completed') {
                 html += '<div class="alert alert-success">';
-                html += '<h3>Gratulation! Sie haben den Kurs abgeschlossen!</h3>';
+                html += `<h3>Gratulation! Sie haben ${more_lessons_available ? "die Lektion" : "den Kurs"} abgeschlossen!</h3>`;
                 if (data.earned_badges.length > 0) {
                     html += '<p>Sie haben folgende Abzeichen erhalten:</p>';
                     html += '<div class="cs-badges">';
@@ -292,24 +313,17 @@ class CapitoBadges extends Backbone.Controller {
                     html += '<p>Sie können den Kurs noch einmal machen. Dann können Sie noch mehr Abzeichen bekommen.</p>';
                 }
                 html += '</div>';
+                Adapt.trigger('capitoBadges:showDialog', html + style);
             } else if (complete) {
                 html += '<div class="alert alert-info">';
                 html += '<h3>Fortschritt gespeichert</h3>';
-                html += '<p>Ihre Antworten wurden gespeichert. Machen Sie weiter, um den Kurs abzuschließen.</p>';
+                html += '<p>Ihre Antworten wurden gespeichert. Machen Sie mit der nächsten Lektion weiter, um den Kurs abzuschließen.</p>';
                 html += '</div>';
+
+
+                // Ask ContentSelectorView to show the dialog with provided HTML
+                Adapt.trigger('capitoBadges:showDialog', html + style);
             }
-
-            // Inject basic styles if not present (simplified for now)
-            const style = `
-                <style>
-                    .cs-badges { display: flex; flex-wrap: wrap; gap: 16px; }
-                    .cs-badges > div { width: 120px; text-align: center; display: flex; flex-direction: column; align-items: center; background: white; border-radius: 10px; padding: 5px 0; }
-                    .cs-badges img { max-width: 100%; height: auto; display: block; }
-                </style>
-            `;
-
-            // Ask ContentSelectorView to show the dialog with provided HTML
-            Adapt.trigger('capitoBadges:showDialog', html + style);
         } catch (error) {
             console.error('capitoBadges: Failed to send tracking data:', error);
         }

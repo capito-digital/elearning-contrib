@@ -16,7 +16,14 @@ class AiChatModel extends QuestionModel {
             _isLoading: false,
             _showFeedbackOptions: false
         });
-        this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onSelectionChanged);
+        this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onContentSelectorChanged);
+        this.listenTo(Adapt, 'blockNavigation:initialized', ({instance}) => {
+            if (instance?.currentSelection) this.onContentSelectorChanged(instance.currentSelection);
+        });
+        const currentSelection = Adapt.blockNavigation?.currentSelection;
+        if (currentSelection) this.onContentSelectorChanged(currentSelection);
+        const storedSelection = Adapt.get('_contentSelectorSelection');
+        if (storedSelection) this.onContentSelectorChanged(storedSelection);
     }
 
     // Make API call to the AI chat endpoint
@@ -38,7 +45,9 @@ class AiChatModel extends QuestionModel {
             const requestBody = {
                 course_id: courseId,
                 question_id: questionId,
-                message: textareaContent
+                message: textareaContent,
+                locale: this._locale || 'de',
+                proficiency: this._proficiency || 'original'
             };
 
             let sessionToken = localStorage.getItem('capito_session_token');
@@ -92,6 +101,13 @@ class AiChatModel extends QuestionModel {
                 '_isLoading': false
             });
         }
+    }
+
+    onContentSelectorChanged(payload) {
+        const locale = (payload?.locale || '').toLowerCase();
+        const proficiency = (payload?.proficiency || '').toLowerCase();
+        if (locale) this._locale = locale;
+        if (proficiency) this._proficiency = proficiency;
     }
 
     // Override parent methods that aren't needed for AI chat

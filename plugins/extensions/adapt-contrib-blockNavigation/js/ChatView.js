@@ -15,19 +15,20 @@ export default class ChatView extends Backbone.View {
 
         // Listen for locale/proficiency changes
         this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onSelectionChanged);
-
+        Adapt.on('app:dataReady', this.setCourseId)
         // Get initial values
         this.locale = this._getCurrentLocale();
         this.proficiency = this._getCurrentProficiency();
     }
 
     onSelectionChanged(payload) {
-        this.locale = payload.locale;
-        this.proficiency = payload.proficiency;
+        this.locale = payload?.locale || this.locale;
+        this.proficiency = payload?.proficiency || this.proficiency;
         console.log('[ChatView] contentSelector:selectionChanged', {
             locale: this.locale,
             proficiency: this.proficiency
         });
+        this.updatePlaceholder();
     }
 
     _getCurrentLocale() {
@@ -75,11 +76,15 @@ export default class ChatView extends Backbone.View {
 
     render() {
         const template = this.getTemplate();
+        const placeholder = this.getChatPlaceholder();
         // Ensure root element has id and classes
         this.$el.attr('id', 'bn-chat');
         this.$el.addClass('bn-chat');
         this.$el.toggleClass('is-minimized', this.isMinimized);
-        this.$el.html(template({}));
+        this.$el.html(template({
+            placeholder,
+            placeholderAria: placeholder
+        }));
 
         const $btn = this.$('.js-chat-toggle');
         if ($btn && $btn.length) $btn.text(this.isMinimized ? '+' : '−');
@@ -87,9 +92,7 @@ export default class ChatView extends Backbone.View {
         // Cache frequently used nodes
         this.$messages = this.$('.bn-chat__messages');
         this.$input = this.$('.js-chat-input');
-
-        // Initialize course id immediately
-        this.setCourseIdFromDOM();
+        this.updatePlaceholder();
 
         // Listen for clicks outside to minimize
         document.addEventListener('mousedown', this.onClickOutside);
@@ -97,19 +100,16 @@ export default class ChatView extends Backbone.View {
         return this;
     }
 
-    setCourseIdFromDOM() {
+    setCourseId() {
         try {
-            const elWithDataLocation = document.querySelector('[data-location]');
-            if (elWithDataLocation) {
-                const loc = elWithDataLocation.getAttribute('data-location') || '';
-                if (loc) {
-                    const parts = loc.split('-');
-                    this.courseId = parts.slice(-5).join('-');
-                }
-            }
+            this.courseId = Adapt.config?.get?.('_courseId')
+                || Adapt.course?.get?.('_globals')?._courseId
+                || Adapt.course?.get?.('_id')
+                || null;
         } catch (e) {
-            console.warn('[ChatView] Failed to extract course id', e);
+            console.warn('[ChatView] Failed to resolve course id', e);
         }
+        return this.courseId
     }
 
     showIfHidden(showIntro = false) {
@@ -183,7 +183,7 @@ export default class ChatView extends Backbone.View {
         this.$input.val('');
 
         try {
-            if (!this.courseId) {
+            if (!this.courseId && !this.setCourseId()) {
                 console.warn('[ChatView] No course_id extracted, skipping POST');
                 return;
             }
@@ -292,6 +292,60 @@ export default class ChatView extends Backbone.View {
         this.$messages.scrollTop(this.$messages[0].scrollHeight);
         // Remove 'new' class after animation
         setTimeout(() => $message.removeClass('new'), 300);
+    }
+
+    // --- i18n placeholder ---
+    updatePlaceholder() {
+        if (!this.$input || !this.$input.length) return;
+        const text = this.getChatPlaceholder();
+        if (!text) return;
+        this.$input.attr('placeholder', text);
+        this.$input.attr('aria-label', text);
+    }
+
+    getChatPlaceholder() {
+        const locale = (this.locale || this._getCurrentLocale() || 'de').toLowerCase();
+        const globals = Adapt.course?.get('_globals') || {};
+        const chatConfig = globals?._extensions?._blockNavigation?._chat || {};
+        const placeholders = chatConfig.placeholders || chatConfig.placeholder || chatConfig;
+
+        let placeholder = null;
+        if (typeof placeholders === 'string') {
+            placeholder = placeholders;
+        } else if (placeholders && typeof placeholders === 'object') {
+            placeholder =
+                placeholders[locale] ||
+                placeholders[locale.toUpperCase()] ||
+                placeholders.default ||
+                placeholders.DEFAULT ||
+                null;
+        }
+
+        if (!placeholder) {
+            placeholder = this.getDefaultPlaceholder(locale);
+        }
+        return String(placeholder);
+    }
+
+    getDefaultPlaceholder(locale) {
+        switch (String(locale || '').toLowerCase()) {
+            case 'de':
+                return 'Nachricht eingeben oder Mikrofon benutzen...';
+            case 'en':
+                return 'Type a message or use the microphone...';
+            case 'fr':
+                return 'Saisissez un message...';
+            case 'es':
+                return 'Escribe un mensaje...';
+            case 'it':
+                return 'Scrivi un messaggio...';
+            case 'pt':
+                return 'Digite uma mensagem...';
+            case 'nl':
+                return 'Typ een bericht...';
+            default:
+                return 'Type a message...';
+        }
     }
 
     remove() {
