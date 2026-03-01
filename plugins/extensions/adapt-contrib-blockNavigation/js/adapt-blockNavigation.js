@@ -50,6 +50,7 @@ class BlockNavigation extends Backbone.Controller {
         this.listenTo(Adapt, 'popup:opened', this._checkPopupReadable);
         // Listen for hotgraphic item changes within the popup
         this.listenTo(Adapt, 'hotgraphic:popupItemChanged', this._onHotgraphicPopupItemChanged);
+        this.listenTo(Adapt, 'notify:closed', this._teardownHotgraphicPopupObserver);
 
         // Explanations feature: delegated handlers
         this._onExplClick = this._onExplClick?.bind ? this._onExplClick.bind(this) : (e) => this._onExplClick(e);
@@ -86,25 +87,54 @@ class BlockNavigation extends Backbone.Controller {
 
     _checkPopupReadable(popup) {
         try {
-            const html = popup?.prevObject?.[0]?.innerHTML || '';
+            const popupEl = popup?.prevObject?.[0] || popup?.$el?.get?.(0) || document.querySelector('.hotgraphic-popup');
+            const html = popupEl?.innerHTML || '';
             if (!html) return;
             const tmp = document.createElement('div');
             tmp.innerHTML = html;
             const countEl = tmp.querySelector('.hotgraphic-popup__count');
             if (!countEl) return;
             const text = (countEl.textContent || '').trim();
-            // Expect formats like "1/5" or "1 / 5"
-            const m = text.match(/(\d+)\s*\/\s*(\d+)/);
-            if (!m) return;
-            const index = parseInt(m[1]) - 1;
-            if (Number.isNaN(index) || index < 0) return;
-            // if (index === this._lastHotgraphicIndex) return;
-            this._lastHotgraphicIndex = index;
-            if (this.ttsEnabled) {
-                this._playTTSForCurrentBlock(index);
-            }
+            this._handleHotgraphicPopupCount(text);
+            this._setupHotgraphicPopupObserver(popupEl);
         } catch (e) {
             console.warn('[blockNavigation] failed to process popup:opened for TTS', e);
+        }
+    }
+
+    _handleHotgraphicPopupCount(text) {
+        // Expect formats like "1/5" or "1 / 5"
+        const m = String(text || '').trim().match(/(\d+)\s*\/\s*(\d+)/);
+        if (!m) return;
+        const index = parseInt(m[1]) - 1;
+        if (Number.isNaN(index) || index < 0) return;
+        this._lastHotgraphicIndex = index;
+        if (this.ttsEnabled) {
+            this._playTTSForCurrentBlock(index);
+        }
+    }
+
+    _setupHotgraphicPopupObserver(popupEl) {
+        if (!popupEl) return;
+        const countEl = popupEl.querySelector('.hotgraphic-popup__count');
+        if (!countEl) return;
+        this._teardownHotgraphicPopupObserver();
+        this._hotgraphicCountObserver = new MutationObserver(() => {
+            this._handleHotgraphicPopupCount(countEl.textContent || '');
+        });
+        this._hotgraphicCountObserver.observe(countEl, {
+            characterData: true,
+            childList: true,
+            subtree: true
+        });
+        this._hotgraphicCountEl = countEl;
+    }
+
+    _teardownHotgraphicPopupObserver() {
+        if (this._hotgraphicCountObserver) {
+            this._hotgraphicCountObserver.disconnect();
+            this._hotgraphicCountObserver = null;
+            this._hotgraphicCountEl = null;
         }
     }
 

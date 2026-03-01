@@ -123,6 +123,14 @@ class HotgraphicPopupView extends Backbone.View {
     this.manageBackNextStates(index);
     this.updatePageCount();
     this.render();
+
+    try {
+      Adapt.trigger('hotgraphic:popupItemChanged', {
+        index,
+        totalItems: this.model.getChildren().length,
+        modelId: this.model.get('_id')
+      });
+    } catch (e) { /* noop */ }
   }
 
   onCloseClick() {
