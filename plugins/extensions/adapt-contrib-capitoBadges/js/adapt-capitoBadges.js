@@ -299,6 +299,11 @@ class CapitoBadges extends Backbone.Controller {
             if (data.status === 'completed') {
                 html += '<div class="alert alert-success">';
                 html += `<h3>Gratulation! Sie haben ${more_lessons_available ? "die Lektion" : "den Kurs"} abgeschlossen!</h3>`;
+                const correctAnswers = Number.isFinite(data.correct_answers) ? data.correct_answers : null;
+                const totalQuestions = Number.isFinite(data.total_questions) ? data.total_questions : null;
+                if (correctAnswers !== null && totalQuestions !== null && totalQuestions > 0) {
+                    html += `<p>Richtige Antworten: ${correctAnswers}/${totalQuestions}</p>`;
+                }
                 if (data.earned_badges.length > 0) {
                     html += '<p>Sie haben folgende Abzeichen erhalten:</p>';
                     html += '<div class="cs-badges">';

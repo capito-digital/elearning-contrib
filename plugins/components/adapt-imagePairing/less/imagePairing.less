@@ -80,6 +80,27 @@
     word-break: break-word;
   }
 
+  // Keep text compact in both columns
+  &__leftItem .imagePairing__text,
+  &__rightItem .imagePairing__text {
+    font-size: small;
+    line-height: 1.25;
+  }
+
+  // Improve right-tile readability over busy image backgrounds
+  &__rightItem .imagePairing__text,
+  &__rightItem .imagePairing__text--paired {
+    color: @white;
+    background: linear-gradient(
+      to bottom,
+      fade(@black, 10%) 0%,
+      fade(@black, 58%) 45%,
+      fade(@black, 72%) 100%
+    );
+    border-radius: 4px;
+    text-shadow: 0 1px 2px fade(@black, 65%);
+  }
+
   &__leftItem {
     cursor: grab;
 
