@@ -604,6 +604,7 @@
   cursor: pointer;
   border: none;
   background: #fff;
+  position: relative;
 
   img {
     width: 56px;
@@ -611,6 +612,36 @@
     object-fit: cover;
     display: block;
   }
+}
+
+.cs-locale-toggle.cs-flag-proficiency-b1::after,
+.cs-locale-toggle.cs-flag-proficiency-a2::after,
+.cs-locale-toggle.cs-flag-proficiency-a1::after {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  padding: 1px 5px;
+  border-radius: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.78);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.cs-locale-toggle.cs-flag-proficiency-b1::after {
+  content: 'B1';
+}
+
+.cs-locale-toggle.cs-flag-proficiency-a2::after {
+  content: 'A2';
+}
+
+.cs-locale-toggle.cs-flag-proficiency-a1::after {
+  content: 'A1';
 }
 
 .cs-flag-panel {
@@ -699,6 +730,7 @@
 .content-selector-item {
   display: inline-block;
   width: 180px;
+  height: 150px;
   vertical-align: top;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -719,10 +751,51 @@
 }
 
 .content-selector-btn {
-  width: 70px;
-  height: 90px;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
   display: block;
+  margin: 0;
+}
+
+.content-selector-flag {
+  position: relative;
+  width: 150px;
   margin: 0 auto 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-selector-flag.cs-flag-proficiency-b1::after,
+.content-selector-flag.cs-flag-proficiency-a2::after,
+.content-selector-flag.cs-flag-proficiency-a1::after {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  padding: 1px 5px;
+  border-radius: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.78);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.content-selector-flag.cs-flag-proficiency-b1::after {
+  content: 'B1';
+}
+
+.content-selector-flag.cs-flag-proficiency-a2::after {
+  content: 'A2';
+}
+
+.content-selector-flag.cs-flag-proficiency-a1::after {
+  content: 'A1';
 }
 
 .content-selector-label {
@@ -738,7 +811,12 @@
   }
 
   .content-selector-btn {
-    width: 56px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .content-selector-flag {
+    width: 100%;
     height: 72px;
   }
 }

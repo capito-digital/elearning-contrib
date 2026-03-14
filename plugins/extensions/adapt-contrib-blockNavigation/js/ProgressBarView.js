@@ -9,7 +9,9 @@ export default class ProgressBarView extends Backbone.View {
 
     initialize(options) {
         this.parentView = options.parentView;
+        this.completionStored = false;
         this.listenTo(this.model, 'change:current change:total', this.render);
+        this.listenTo(Adapt, 'blockNavigation:completionStored', this.onCompletionStored);
     }
 
     className() {
@@ -46,6 +48,15 @@ export default class ProgressBarView extends Backbone.View {
         };
     }
 
+    getBackToOverviewButtonStrings(data) {
+        const globals = data?._globals?._extensions?._blockNavigation || {};
+        const back = globals._buttons?._backToOverview || {};
+        return {
+            text: back.text || 'Zur',
+            aria: back.ariaLabel || back.text || 'Zurück zur Übersicht'
+        };
+    }
+
     getProgressbarValue(current, total) {
         if (!total || total === 0) return 0;
         return Math.round((current / total) * 100);
@@ -63,6 +74,7 @@ export default class ProgressBarView extends Backbone.View {
         const {progressText, progressAria} = this.computeProgressStrings(data);
         const isLast = this.isLastItem();
         const completeStrings = this.getCompleteButtonStrings(data);
+        const backToOverviewStrings = this.getBackToOverviewButtonStrings(data);
         const template = this.getTemplate();
 
         this.$el.html(template({
@@ -71,8 +83,12 @@ export default class ProgressBarView extends Backbone.View {
             progressAria,
             progress: this.getProgressbarValue(data.current, data.total),
             isLast,
-            nextButtonText: isLast ? completeStrings.text : data?._globals?._extensions?._blockNavigation?._buttons?._next?.text,
-            nextButtonAria: isLast ? completeStrings.aria : data?._globals?._extensions?._blockNavigation?._buttons?._next?.ariaLabel,
+            nextButtonText: isLast
+                ? (this.completionStored ? backToOverviewStrings.text : completeStrings.text)
+                : data?._globals?._extensions?._blockNavigation?._buttons?._next?.text,
+            nextButtonAria: isLast
+                ? (this.completionStored ? backToOverviewStrings.aria : completeStrings.aria)
+                : data?._globals?._extensions?._blockNavigation?._buttons?._next?.ariaLabel,
         }));
 
         // Notify other extensions/components that the progress bar has rendered
@@ -111,6 +127,10 @@ export default class ProgressBarView extends Backbone.View {
         const isLast = this.isLastItem();
         console.log('[blockNavigation:TopBarView] next clicked', {isLast});
         if (isLast) {
+            if (this.completionStored) {
+                window.history.back();
+                return;
+            }
             // Emit completion event for listeners (e.g., capitoBadges)
             try {
                 Adapt.trigger('blockNavigation:complete');
@@ -121,6 +141,11 @@ export default class ProgressBarView extends Backbone.View {
             // Bubble up to parent view to proceed to next content
             this.parentView.trigger('nav:next');
         }
+    }
+
+    onCompletionStored() {
+        this.completionStored = true;
+        this.render();
     }
 
 }

@@ -15,6 +15,10 @@ class CapitoBadges extends Backbone.Controller {
         this.listenTo(Adapt, 'assessments:complete', this.onAssessmentComplete);
         // Submit cached data when the user completes the course flow via blockNavigation
         this.listenTo(Adapt, 'blockNavigation:complete', this.onBlockNavigationComplete);
+        // Menu is rendered on first load and when navigating back to it.
+        this.listenTo(Adapt, 'menuView:postReady', this.onMenuReady);
+        this.completionStored = false;
+        this.completionInFlight = false;
 
     }
 
@@ -28,30 +32,76 @@ class CapitoBadges extends Backbone.Controller {
         return globals || {};
     }
 
+    getSessionToken() {
+        const fromStorage = localStorage.getItem('capito_session_token');
+        if (fromStorage) return fromStorage;
+        const m = document.cookie.match(/(?:^|;\s*)capito_session_token=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    persistSessionToken(token) {
+        if (!token) return;
+        localStorage.setItem('capito_session_token', token);
+        document.cookie = `capito_session_token=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 30 * 12}`;
+    }
+
     showView() {
         const config = this.getGlobalConfig();
         config['_userId'] = this.getUserId();
         config['_userName'] = this.getUserDisplayName();
         config['_baseUrl'] = this.getGlobalConfig()['_dashboardBaseUrl'];
         config['_courseId'] = this.getGlobalConfig()['_courseId'];
-        const view = new CapitoBadgesView({
+        this.view = new CapitoBadgesView({
             model: new Backbone.Model(config)
         });
     }
 
-    loadEarnedBadges() {
-        const config = this.getConfig();
-        const baseUrl = config._baseUrl;
+    onMenuReady() {
+        this.loadEarnedBadges();
+    }
 
-        console.log('Base URL:', baseUrl);
-        // Use baseUrl for your API calls
+    async loadEarnedBadges() {
+        if (!this.view || !this.courseId) return;
+
+        const globals = this.getGlobalConfig();
+        const baseUrl = globals._dashboardBaseUrl || Adapt.config.dashboardBaseUrl;
+        const userRef = this.buildUserRef(this.getUserId());
+        let sessionToken = this.getSessionToken();
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+        if (sessionToken) {
+            headers['X-Session-Token'] = sessionToken;
+        }
+
+        try {
+            const response = await fetch(`${baseUrl}/public/v1/courses/${this.courseId}/badges`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({user: userRef}),
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const newToken = response.headers.get('X-Session-Token');
+            if (newToken) {
+                this.persistSessionToken(newToken);
+            }
+
+            const data = await response.json();
+            this.view.renderBadges(Array.isArray(data.pages) ? data.pages : []);
+        } catch (error) {
+            console.error('capitoBadges: Failed to load badges:', error);
+        }
     }
 
     onDataReady() {
         console.log('Plugin has loaded and data is ready');
+        this.courseId = this.getGlobalConfig()['_courseId'];
         this.showView();
-        this.loadEarnedBadges();
-        this.courseId = this.getGlobalConfig()['_courseId']
     }
 
     onSelectionChanged(payload) {
@@ -73,13 +123,23 @@ class CapitoBadges extends Backbone.Controller {
         }
     }
 
-    onBlockNavigationComplete() {
+    async onBlockNavigationComplete() {
+        if (this.completionStored || this.completionInFlight) {
+            return;
+        }
+        this.completionInFlight = true;
         // Submit completion flag when the user clicks "Abschließen"
         try {
             const trackingData = this.buildCompletionTrackingData();
-            this.sendTrackingData(trackingData, {complete: true});
+            const ok = await this.sendTrackingData(trackingData, {complete: true});
+            if (ok) {
+                this.completionStored = true;
+                Adapt.trigger('blockNavigation:completionStored');
+            }
         } catch (e) {
             console.error('capitoBadges: failed to submit on blockNavigation:complete', e);
+        } finally {
+            this.completionInFlight = false;
         }
     }
 
@@ -233,6 +293,21 @@ class CapitoBadges extends Backbone.Controller {
         };
     }
 
+    isGuestUserId(userId) {
+        if (!userId) return true;
+        const normalized = String(userId).trim().toLowerCase();
+        if (!normalized) return true;
+        // Treat LMS guest/anonymous ids as session-managed to avoid cross-user progress sharing.
+        return ['guest', 'anonymous', 'anon'].includes(normalized);
+    }
+
+    buildUserRef(userId) {
+        if (userId && !this.isGuestUserId(userId)) {
+            return {type: 'lms', id: userId};
+        }
+        return {type: 'session_managed'};
+    }
+
     async sendTrackingData(trackingData, {complete = false} = {}) {
         const globals = this.getGlobalConfig();
         const baseUrl = globals._dashboardBaseUrl || Adapt.config.dashboardBaseUrl;
@@ -240,7 +315,7 @@ class CapitoBadges extends Backbone.Controller {
 
         // Prepare request body according to TrackProgressRequest
         const body = {
-            lms_user_id: trackingData.user_id || 'anonymous',
+            user: this.buildUserRef(trackingData.user_id),
             locale: trackingData.locale,
             proficiency: trackingData.proficiency,
             page_id: trackingData.page_id,
@@ -254,7 +329,7 @@ class CapitoBadges extends Backbone.Controller {
             }));
         }
 
-        let sessionToken = localStorage.getItem('capito_session_token');
+        let sessionToken = this.getSessionToken();
         const headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -278,10 +353,14 @@ class CapitoBadges extends Backbone.Controller {
             // Save token from response
             const newToken = response.headers.get('X-Session-Token');
             if (newToken) {
-                localStorage.setItem('capito_session_token', newToken);
+                this.persistSessionToken(newToken);
             }
 
             const data = await response.json();
+            if (complete) {
+                // Force badge refresh after completion so menu view shows latest badges.
+                await this.loadEarnedBadges();
+            }
 
             // Build simple HTML from JSON response for the dialog
             // In the future, we might want to use a template for this
@@ -329,8 +408,10 @@ class CapitoBadges extends Backbone.Controller {
                 // Ask ContentSelectorView to show the dialog with provided HTML
                 Adapt.trigger('capitoBadges:showDialog', html + style);
             }
+            return true;
         } catch (error) {
             console.error('capitoBadges: Failed to send tracking data:', error);
+            return false;
         }
     }
 }

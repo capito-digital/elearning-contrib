@@ -26,6 +26,19 @@ class AiChatModel extends QuestionModel {
         if (storedSelection) this.onContentSelectorChanged(storedSelection);
     }
 
+    getSessionToken() {
+        const fromStorage = localStorage.getItem('capito_session_token');
+        if (fromStorage) return fromStorage;
+        const m = document.cookie.match(/(?:^|;\s*)capito_session_token=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    persistSessionToken(token) {
+        if (!token) return;
+        localStorage.setItem('capito_session_token', token);
+        document.cookie = `capito_session_token=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 30}`;
+    }
+
     // Make API call to the AI chat endpoint
     async makeAiChatRequest() {
         const questionId = this.get('_questionId');
@@ -50,7 +63,7 @@ class AiChatModel extends QuestionModel {
                 proficiency: this._proficiency || 'original'
             };
 
-            let sessionToken = localStorage.getItem('capito_session_token');
+            let sessionToken = this.getSessionToken();
             const headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -73,7 +86,7 @@ class AiChatModel extends QuestionModel {
             // Save token from response
             const newToken = response.headers.get('X-Session-Token');
             if (newToken) {
-                localStorage.setItem('capito_session_token', newToken);
+                this.persistSessionToken(newToken);
             }
 
             const data = await response.json();

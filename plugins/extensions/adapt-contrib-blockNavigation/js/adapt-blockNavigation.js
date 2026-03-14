@@ -21,8 +21,8 @@ class BlockNavigation extends Backbone.Controller {
             buttonsEl: null,
             styleEl: null
         };
-        // this.onKeydown = this.onKeydown.bind(this);
         this._onNarrativeControlClick = this._onNarrativeControlClick.bind(this);
+        this._onArrowKeydown = this._onArrowKeydown.bind(this);
         this.chatView = null; // persistent singleton chat
         this._chatIntroShown = false;
 
@@ -216,7 +216,7 @@ class BlockNavigation extends Backbone.Controller {
     }
 
     teardown() {
-        // $(document).off('keydown', this.onKeydown);
+        $(document).off('keydown.blockNavArrows', this._onArrowKeydown);
         if (this.footerView) {
             this.footerView.remove();
             this.footerView = null;
@@ -276,7 +276,7 @@ class BlockNavigation extends Backbone.Controller {
         this._attachNarrativeControlListeners();
 
         // keyboard support
-        // $(document).on('keydown', this.onKeydown);
+        $(document).off('keydown.blockNavArrows').on('keydown.blockNavArrows', this._onArrowKeydown);
 
         this.announceCurrent();
         Adapt.trigger('blockNavigation:changed', {oldIndex: -1, newIndex: 0});
@@ -365,13 +365,17 @@ class BlockNavigation extends Backbone.Controller {
             btn.title = 'Klicken Sie hier, um den Text einfacher zu machen, oder in einer anderen Sprache anzuzeigen.';
             const img = document.createElement('img');
             img.alt = 'Aktuelle Sprache';
-            img.src = this._getFlagPath(this.currentSelection?.locale, this.currentSelection?.proficiency);
+            img.src = this._getFlagPath(this.currentSelection?.locale);
             btn.appendChild(img);
+            this._applyProficiencyClass(btn, this.currentSelection?.proficiency);
+            this._applyProficiencyClass(img, this.currentSelection?.proficiency);
             btn.addEventListener('click', () => this._toggleCsPanel());
             this._cs.toggleEl = btn;
         } else {
             const img = this._cs.toggleEl.querySelector('img');
-            if (img) img.src = this._getFlagPath(this.currentSelection?.locale, this.currentSelection?.proficiency);
+            if (img) img.src = this._getFlagPath(this.currentSelection?.locale);
+            this._applyProficiencyClass(this._cs.toggleEl, this.currentSelection?.proficiency);
+            this._applyProficiencyClass(img, this.currentSelection?.proficiency);
         }
 
         // Insert before Next if present
@@ -468,6 +472,7 @@ class BlockNavigation extends Backbone.Controller {
             img.className = 'content-selector-btn';
             img.alt = label || deriveLabel(value, label);
             img.src = this._getFlagPathFromValue(value);
+            const [, proficiency] = (value || '').split('-');
 
             const span = document.createElement('span');
             span.className = 'content-selector-label';
@@ -486,7 +491,12 @@ class BlockNavigation extends Backbone.Controller {
                 onSelect();
             });
 
-            item.appendChild(img);
+            const imgWrap = document.createElement('div');
+            imgWrap.className = 'content-selector-flag';
+            this._applyProficiencyClass(imgWrap, proficiency);
+            this._applyProficiencyClass(img, proficiency);
+            imgWrap.appendChild(img);
+            item.appendChild(imgWrap);
             item.appendChild(span);
             this._cs.buttonsEl.appendChild(item);
         });
@@ -525,7 +535,9 @@ class BlockNavigation extends Backbone.Controller {
         // Keep icon in sync when opening
         if (show && this._cs.toggleEl) {
             const img = this._cs.toggleEl.querySelector('img');
-            if (img) img.src = this._getFlagPath(this.currentSelection?.locale, this.currentSelection?.proficiency);
+            if (img) img.src = this._getFlagPath(this.currentSelection?.locale);
+            this._applyProficiencyClass(this._cs.toggleEl, this.currentSelection?.proficiency);
+            this._applyProficiencyClass(img, this.currentSelection?.proficiency);
         }
     }
 
@@ -540,7 +552,9 @@ class BlockNavigation extends Backbone.Controller {
         // Update toggle icon
         if (this._cs.toggleEl) {
             const img = this._cs.toggleEl.querySelector('img');
-            if (img) img.src = this._getFlagPath(loc, prof);
+            if (img) img.src = this._getFlagPath(loc);
+            this._applyProficiencyClass(this._cs.toggleEl, prof);
+            this._applyProficiencyClass(img, prof);
         }
         // Notify others
         Adapt.trigger('contentSelector:selectionChanged', {locale: loc, proficiency: prof});
@@ -611,21 +625,36 @@ class BlockNavigation extends Backbone.Controller {
         }
     }
 
-    _getFlagPath(locale, proficiency) {
-        let suffix = '';
-        if (proficiency && String(proficiency).toLowerCase() !== 'original') suffix = '_' + String(proficiency).toLowerCase();
+    _getFlagPath(locale) {
         const l = (locale || '').toLowerCase();
-        return `assets/flags/${l}${suffix}.webp`;
+        return `assets/flags/${l}.webp`;
     }
 
     _getFlagPathFromValue(val) {
         try {
-            const [lang, prof] = (val || '').split('-');
-            if ((prof || '').toLowerCase() === 'original') return `assets/flags/${String(lang).toLowerCase()}.webp`;
-            return `assets/flags/${String(lang).toLowerCase()}_${String(prof).toLowerCase()}.webp`;
+            const [lang] = (val || '').split('-');
+            return `assets/flags/${String(lang).toLowerCase()}.webp`;
         } catch (_e) {
             return '';
         }
+    }
+
+    _normalizeProficiency(proficiency) {
+        const prof = String(proficiency || 'original').toLowerCase();
+        return ['original', 'b1', 'a2', 'a1'].includes(prof) ? prof : 'original';
+    }
+
+    _applyProficiencyClass(el, proficiency) {
+        if (!el?.classList) return;
+        const prof = this._normalizeProficiency(proficiency);
+        const allClasses = [
+            'cs-flag-proficiency-original',
+            'cs-flag-proficiency-b1',
+            'cs-flag-proficiency-a2',
+            'cs-flag-proficiency-a1'
+        ];
+        allClasses.forEach(cls => el.classList.remove(cls));
+        el.classList.add(`cs-flag-proficiency-${prof}`);
     }
 
     // Dialog support moved here (uses template markup injected into footer)
@@ -921,6 +950,42 @@ class BlockNavigation extends Backbone.Controller {
                 console.warn('[blockNavigation] failed to play TTS after narrative control click', err);
             }
         }, 150);
+    }
+
+    _onArrowKeydown(event) {
+        if (!event) return;
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        const target = event.target;
+        if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(target.tagName))) return;
+
+        const openNotifyPopup = document.querySelector('.notify__popup[open]');
+        if (openNotifyPopup) {
+            if (openNotifyPopup.classList.contains('hotgraphic')) {
+                if (event.key === 'ArrowRight') {
+                    const nextHotgraphicBtn = openNotifyPopup.querySelector('.hotgraphic-popup__controls.next');
+                    if (nextHotgraphicBtn && !nextHotgraphicBtn.classList.contains('is-disabled')) nextHotgraphicBtn.click();
+                    return;
+                }
+
+                if (event.key === 'ArrowLeft') {
+                    const backHotgraphicBtn = openNotifyPopup.querySelector('.hotgraphic-popup__controls.back');
+                    if (backHotgraphicBtn && !backHotgraphicBtn.classList.contains('is-disabled')) backHotgraphicBtn.click();
+                    return;
+                }
+            }
+            return;
+        }
+
+        if (event.key === 'ArrowRight') {
+            const nextButton = document.querySelector('.js-block-nav-next');
+            if (nextButton && !nextButton.disabled) nextButton.click();
+            return;
+        }
+
+        if (event.key === 'ArrowLeft') {
+            const backButton = document.querySelector('.js-block-nav-prev, .js-block-nav-back');
+            if (backButton && !backButton.disabled) backButton.click();
+        }
     }
 
     // TTS: state persistence

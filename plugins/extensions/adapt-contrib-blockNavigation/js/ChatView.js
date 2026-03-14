@@ -56,6 +56,19 @@ export default class ChatView extends Backbone.View {
         return 'original';
     }
 
+    getSessionToken() {
+        const fromStorage = localStorage.getItem('capito_session_token');
+        if (fromStorage) return fromStorage;
+        const m = document.cookie.match(/(?:^|;\s*)capito_session_token=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    persistSessionToken(token) {
+        if (!token) return;
+        localStorage.setItem('capito_session_token', token);
+        document.cookie = `capito_session_token=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 30}`;
+    }
+
     className() {
         return 'bn-chat is-hidden';
     }
@@ -194,6 +207,10 @@ export default class ChatView extends Backbone.View {
                 'Content-Type': 'application/json',
 
             };
+            const sessionToken = this.getSessionToken();
+            if (sessionToken) {
+                headers['X-Session-Token'] = sessionToken;
+            }
             const resp = await fetch(`${baseUrl}/public/v1/ai-chat`, {
                 method: 'POST',
                 headers: headers,
@@ -202,13 +219,18 @@ export default class ChatView extends Backbone.View {
                     proficiency: this.proficiency,
                     course_id: this.courseId,
                     message: message
-                })
+                }),
+                credentials: 'include'
             });
             // Remove the sending status
             this.removeLastSystemSendingMessage();
             if (!resp.ok) {
                 this.addSystemMessage('Fehler beim Senden: ' + resp.status);
                 return;
+            }
+            const newToken = resp.headers.get('X-Session-Token');
+            if (newToken) {
+                this.persistSessionToken(newToken);
             }
             const contentType = resp.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
