@@ -78,7 +78,7 @@ export default class CapitoBadgesView extends ComponentView {
             });
             html += '</div>';
             const target = badges_per_page_disabled
-                ? document.getElementsByClassName("menu__item-container boxmenu__item-container")[0]
+                ? document.getElementsByClassName("boxmenu__header-inner")[0].lastChild
                 : Array.from(menuContainers).find((el) =>
                     el.classList.contains(`page-id-${page.page_id}`)
                 )?.querySelector('.boxmenu-item__progress');
@@ -91,7 +91,11 @@ export default class CapitoBadgesView extends ComponentView {
                 const badgesDiv = document.createElement('div');
                 badgesDiv.className = 'cs-badges-container';
                 badgesDiv.innerHTML = html;
-                target.insertBefore(badgesDiv, target.firstChild);
+                if(badges_per_page_disabled) {
+                    target.after(badgesDiv);
+                } else {
+                    target.insertBefore(badgesDiv, target.firstChild);
+                }
             } else {
                 console.error('capitoBadgesView: Failed to find target element for badges:', page.id);
             }
