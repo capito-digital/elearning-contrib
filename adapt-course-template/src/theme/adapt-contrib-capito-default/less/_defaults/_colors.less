@@ -1,6 +1,14 @@
 // Colour definitions
 // --------------------------------------------------
+// All raw palette values and semantic tokens live in _theme.less.
+// This file derives every Adapt variable from those tokens.
+// To customise a theme, edit _theme.less only.
+// --------------------------------------------------
+@import "_theme.less";
 
+// ──────────────────────────────────────────────
+// Raw palette – the only place raw hex values live
+// ──────────────────────────────────────────────
 @positive: #28a745; // Green for correct answers
 @negative: #dc3545; // Red for incorrect answers
 
@@ -19,6 +27,8 @@
 @cDbraun: #443432;
 @cBraun: #5a5a5b;
 
+@white: #ffffff;
+@black: #000000;
 
 // These variables are used to change the colour of text
 // Primary use is for altering the text colour over a background image
@@ -30,11 +40,11 @@
 // Body, link, and heading colour
 // --------------------------------------------------
 
-@body-background-color: @cCreme;
-@content-background-color: white;
+@body-background-color: @primary-inverted;
+@content-background-color: @background-light;
 
-@font-color: @greyDark;
-@font-color-inverted: @white;
+@font-color: @text-color;
+@font-color-inverted: @text-color-inverted;
 
 @link: @font-color;
 @link-inverted: @font-color-inverted;
@@ -42,15 +52,15 @@
 @link-hover: @link;
 @link-inverted-hover: @link-inverted;
 
-@nav-heading-color: @cCreme;
-@heading-color: @cLila;
-@heading-color-inverted: @cCreme;
+@nav-heading-color: @primary-inverted;
+@heading-color: @primary;
+@heading-color-inverted: @primary-inverted;
 
 // Content Item (components)
 // --------------------------------------------------
-@item-color: @cLila;
-@item-color-inverted: @cCreme;
-@item-color-gradient: darken(@item-color, 5%);;
+@item-color: @primary;
+@item-color-inverted: @primary-inverted;
+@item-color-gradient: darken(@item-color, 5%);
 
 @item-color-hover: darken(@item-color, 10%);
 @item-color-inverted-hover: @item-color-inverted;
@@ -102,8 +112,8 @@
 // Content Buttons
 // --------------------------------------------------
 // Filled
-@btn-color: @cLila;
-@btn-color-inverted: @cCreme;
+@btn-color: @primary;
+@btn-color-inverted: @primary-inverted;
 
 @btn-color-hover: darken(@btn-color, 10%);
 @btn-color-inverted-hover: @btn-color-inverted;
@@ -119,8 +129,8 @@
 
 // DEPRECATED
 // replaced by @btn-color-disabled and @btn-color-disabled-inverted
-@disabled: #dddddd;
-@disabled-inverted: @black;
+@disabled: @disabled-color;
+@disabled-inverted: @disabled-color-inverted;
 //
 
 @btn-color-disabled: @disabled;
@@ -137,22 +147,22 @@
 
 // UI (global default for nav, notify, drawer)
 // --------------------------------------------------
-@ui-color: @cHBeige;
-@ui-color-inverted: @greyDark;
+@ui-color: @ui-chrome;
+@ui-color-inverted: @ui-chrome-inverted;
 
 // Validation states - question marking
 // --------------------------------------------------
-@validation-success: #065f28;
-@validation-success-inverted: @white;
+@validation-success: @validation-success-color;
+@validation-success-inverted: @background-light;
 
-@validation-error: @cRed;
-@validation-error-inverted: @white;
+@validation-error: @validation-error-color;
+@validation-error-inverted: @background-light;
 
 // Progress
 // --------------------------------------------------
-@progress: @greyDark;
-@progress-inverted: @white;
-@progress-border: @greyDark;
+@progress: @text-color;
+@progress-inverted: @background-light;
+@progress-border: @text-color;
 
 // Menu
 // --------------------------------------------------
@@ -162,7 +172,7 @@
 @menu-header-body-color: @font-color;
 @menu-header-instruction-color: @font-color;
 
-@menu-item: @white;
+@menu-item: @background-light;
 @menu-item-inverted: @font-color;
 @menu-item-border-color: @item-color;
 
@@ -188,8 +198,8 @@
 @nav-inverted: @ui-color-inverted;
 
 // UI
-@nav-btn: white;
-@nav-btn-inverted: @cLila;
+@nav-btn: @background-light;
+@nav-btn-inverted: @primary;
 @nav-btn-disabled: @disabled;
 @nav-btn-inverted-disabled: @disabled-inverted;
 
@@ -314,12 +324,12 @@
 
 // Shadow
 // --------------------------------------------------
-@shadow: @black;@nav-icon-disabled: @disabled;
-@nav-icon-inverted-disabled: @disabled-inverted;
-@shadow-inverted: @white;
+@shadow: @background-dark;
+@shadow-inverted: @background-light;
 @shadow-opacity: 50%;
 
 // Loading
 // --------------------------------------------------
-@loading: @black;
-@loading-inverted: @white;
+@loading: @background-dark;
+@loading-inverted: @background-light;
+// Background extremes
