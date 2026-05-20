@@ -17,7 +17,6 @@ class CapitoBadges extends Backbone.Controller {
         this.listenTo(Adapt, 'blockNavigation:complete', this.onBlockNavigationComplete);
         // Menu is rendered on first load and when navigating back to it.
         this.listenTo(Adapt, 'menuView:postReady', this.onMenuReady);
-        this.completionStored = false;
         this.completionInFlight = false;
 
     }
@@ -124,7 +123,7 @@ class CapitoBadges extends Backbone.Controller {
     }
 
     async onBlockNavigationComplete() {
-        if (this.completionStored || this.completionInFlight) {
+        if (this.completionInFlight) {
             return;
         }
         this.completionInFlight = true;
@@ -133,7 +132,6 @@ class CapitoBadges extends Backbone.Controller {
             const trackingData = this.buildCompletionTrackingData();
             const ok = await this.sendTrackingData(trackingData, {complete: true});
             if (ok) {
-                this.completionStored = true;
                 Adapt.trigger('blockNavigation:completionStored');
             }
         } catch (e) {

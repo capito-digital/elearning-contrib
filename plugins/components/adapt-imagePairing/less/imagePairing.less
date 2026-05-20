@@ -264,6 +264,8 @@
     justify-content: center;
     overflow: hidden;
     transition: transform .15s ease;
+    background: @primary;
+    opacity: 0.8;
 
     img {
       max-width: 100%;
@@ -273,10 +275,17 @@
       object-fit: contain;
     }
 
-    .imagePairing__text,
-    .imagePairing__text--paired {
+    .imagePairing__text
+    {
       padding: .25rem .4rem;
       font-size: .9em;
+      text-align: center;
+    }
+
+    .imagePairing__text--paired
+    {
+      padding: .25rem .4rem;
+      font-size: .7em;
       text-align: center;
     }
   }
