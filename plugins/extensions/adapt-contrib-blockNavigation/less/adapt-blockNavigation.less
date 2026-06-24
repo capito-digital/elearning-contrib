@@ -50,6 +50,18 @@
   &__progress {
     color: white;
   }
+
+  // Chat launcher button rendered inside the bottom navigation bar.
+  // Lives next to the prev/next buttons so it never overlays content.
+  &__btn--chat {
+    flex: 0 0 auto;
+    padding: 0.3em 0.6em;
+    font-size: 1.2em;
+    line-height: 1;
+    background: transparent;
+    color: @nav-btn-inverted;
+    box-shadow: none;
+  }
 }
 
 .block-navigation__tts {
@@ -353,41 +365,11 @@
     display: none !important;
   }
 
+  // The chat is now launched from a button inside the block-navigation bar
+  // (see .block-navigation__btn--chat). When minimized we simply hide the
+  // whole panel; no floating launcher remains on top of the content/nav.
   &.is-minimized {
-    width: 60px;
-    height: 60px;
-    min-width: 60px;
-    min-height: 60px;
-    border-radius: 50%;
-    cursor: pointer;
-    resize: none;
-    bottom: 20px !important;
-    right: 20px !important;
-    left: auto !important;
-    top: auto !important;
-
-    .bn-chat__header,
-    .bn-chat__body {
-      display: none;
-    }
-
-    .bn-chat__robot-icon {
-      display: flex;
-    }
-  }
-
-  &__robot-icon {
-    display: none;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    font-size: 32px;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
+    display: none !important;
   }
 
   &__inner {
@@ -818,5 +800,65 @@
   .content-selector-flag {
     width: 100%;
     height: 72px;
+  }
+}
+
+// =====================
+// Mobile layout fixes
+// =====================
+// Two issues addressed here:
+// 1) The floating chat launcher (.bn-chat.is-minimized) sits on top of the
+//    block-navigation bar in the bottom-right corner and can overlay the
+//    "Weiter" button on narrow viewports.
+// 2) In portrait/narrow viewports the progress bar inside
+//    .block-navigation-progress-container__inner can push the navigation
+//    buttons (notably "Weiter") off-screen because of large gaps/padding
+//    and progress min-width.
+
+@media (max-width: 720px) {
+  // --- Progress bar / nav button reflow ---
+  // Make sure the progress element can shrink (min-width: 0) and the
+  // buttons keep their intrinsic size. Reduce gap and horizontal padding
+  // so the layout still fits on narrow screens.
+  .block-navigation-progress-container {
+    padding: 0.6em 0.6em;
+
+    &__inner {
+      gap: 0.6em;
+
+      progress {
+        flex: 1 1 0;
+        min-width: 0;
+        width: 100%;
+      }
+
+      .block-navigation__btn {
+        flex: 0 0 auto;
+        padding: 0.5em 0.8em;
+      }
+    }
+  }
+
+  // When the chat is open on a small screen, let it take the full viewport
+  // so the input/messages remain usable and it cannot push UI off-screen.
+  .bn-chat:not(.is-minimized) {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+    resize: none;
+  }
+}
+
+// Very narrow viewports (portrait phones): hide the numeric/visual progress
+// bar entirely so the navigation buttons always remain visible. The
+// progress information is still represented by the buttons being
+// enabled/disabled.
+@media (max-width: 420px) {
+  .block-navigation-progress-container__inner progress {
+    display: none;
   }
 }

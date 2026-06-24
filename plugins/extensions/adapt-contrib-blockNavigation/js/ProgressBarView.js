@@ -22,7 +22,15 @@ export default class ProgressBarView extends Backbone.View {
         return {
             'click .js-block-nav-prev': 'onPrev',
             'click .js-block-nav-next': 'onNext',
+            'click .js-chat-open': 'onChatOpen',
         };
+    }
+
+    onChatOpen(e) {
+        e?.preventDefault?.();
+        try {
+            Adapt.trigger('bnChat:toggle');
+        } catch (err) { /* noop */ }
     }
 
     getTemplate() {

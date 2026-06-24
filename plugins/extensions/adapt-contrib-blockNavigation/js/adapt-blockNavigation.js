@@ -158,10 +158,9 @@ class BlockNavigation extends Backbone.Controller {
             this.chatView.render();
             // Append to body to avoid layout constraints
             this.chatView.$el.appendTo('body');
-            // Show immediately and set course id
+            // Set course id. The chat now stays hidden until the user clicks the
+            // robot launcher in the navigation bar (which triggers 'bnChat:toggle').
             if (this.chatView.setCourseIdFromDOM) this.chatView.setCourseIdFromDOM();
-            if (this.chatView.showIfHidden) this.chatView.showIfHidden(!this._chatIntroShown);
-            this._chatIntroShown = true;
         } catch (e) {
             console.warn('[blockNavigation] failed to ensure chat', e);
         }

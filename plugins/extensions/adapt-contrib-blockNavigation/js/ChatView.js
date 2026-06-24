@@ -5,7 +5,7 @@ export default class ChatView extends Backbone.View {
     initialize(options) {
         this.parentView = options?.parentView || null;
         this.courseId = null;
-        this.isMinimized = false; // Start opened
+        this.isMinimized = true; // Start closed; the launcher button now lives in the navigation bar
         this._introShown = false;
 
         // bind context
@@ -15,6 +15,8 @@ export default class ChatView extends Backbone.View {
 
         // Listen for locale/proficiency changes
         this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onSelectionChanged);
+        // External toggle requests (e.g. from the nav-bar chat button)
+        this.listenTo(Adapt, 'bnChat:toggle', this.onExternalToggle);
         Adapt.on('app:dataReady', this.setCourseId)
         // Get initial values
         this.locale = this._getCurrentLocale();
@@ -70,17 +72,27 @@ export default class ChatView extends Backbone.View {
     }
 
     className() {
-        return 'bn-chat is-hidden';
+        return 'bn-chat is-hidden is-minimized';
     }
 
     events() {
         return {
             'click .js-chat-toggle': 'onToggle',
-            'click .js-chat-open': 'onToggle',
             'click .js-chat-send': 'onSend',
             'keypress .js-chat-input': 'onKeyPress',
             'mousedown .bn-chat__header': 'onDragStart'
         };
+    }
+
+    onExternalToggle() {
+        // Triggered by the nav-bar robot button. Show the chat if hidden/minimized,
+        // otherwise close it.
+        if (this.$el.hasClass('is-hidden') || this.isMinimized) {
+            this.$el.removeClass('is-hidden');
+            if (this.isMinimized) this.onToggle();
+        } else {
+            this.onToggle();
+        }
     }
 
     getTemplate() {
