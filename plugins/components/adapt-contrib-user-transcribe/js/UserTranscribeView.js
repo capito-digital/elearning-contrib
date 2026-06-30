@@ -209,6 +209,11 @@ function createOverlayWidget(targetInput) {
 }
 
 class UserTranscribeView extends ComponentView {
+    attributes() {
+        const attrs = ComponentView.prototype.attributes.call(this);
+        return Object.assign({}, attrs, { 'aria-hidden': 'true' });
+    }
+
     postRender() {
         // Wait for potential loading indicator to finish before attaching
         let pollId = null;

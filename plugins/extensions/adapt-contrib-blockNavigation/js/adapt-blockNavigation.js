@@ -587,7 +587,7 @@ class BlockNavigation extends Backbone.Controller {
         }
         const loc = (this.currentSelection?.locale || 'de').toLowerCase();
         const prof = (this.currentSelection?.proficiency || 'original').toLowerCase();
-        const css = `\n/* Content Selector dynamic rules (auto-generated) */\n.localized-content { display: none !important; }\n.localized-block { display: none !important; }\n.localized-content.locale-${loc}.proficiency-${prof} { display: inline !important; }\n.localized-block.locale-${loc}.proficiency-${prof} { display: block !important; }\n`;
+        const css = `\n/* Content Selector dynamic rules (auto-generated) */\n.localized-content { display: none !important; aria-hidden: true; }\n.localized-block { display: none !important; aria-hidden: true; }\n.localized-content.locale-${loc}.proficiency-${prof} { display: inline !important; aria-hidden: false; }\n.localized-block.locale-${loc}.proficiency-${prof} { display: block !important; aria-hidden: false; }\n`;
         this._cs.styleEl.textContent = css;
     }
 
@@ -746,10 +746,19 @@ class BlockNavigation extends Backbone.Controller {
         const total = this.navBlocks.length;
         const msg = `Navigated to block ${this.currentIndex + 1} of ${total}`;
         if (Adapt.a11y?.announce) Adapt.a11y.announce(msg);
-        // focus first focusable in block (guard against missing $el)
+        // Focus the first component in the block so screen readers start reading its content
         const $blockEl = this._getBlock$(this.currentBlock());
-        const $focusable = $blockEl?.find('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])').first();
-        if ($focusable && $focusable.length) $focusable.focus();
+        if ($blockEl && $blockEl.length) {
+            const $component = $blockEl.find('.component').first();
+            const targetEl = ($component && $component.length) ? $component.get(0) : $blockEl.get(0);
+            if (!targetEl.getAttribute('tabindex')) {
+                targetEl.setAttribute('tabindex', '-1');
+            }
+            targetEl.focus();
+            try {
+                targetEl.scrollIntoView({behavior: 'smooth', block: 'start'});
+            } catch (e) { /* noop */ }
+        }
     }
 
     navigateNext() {

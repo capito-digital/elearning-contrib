@@ -210,11 +210,13 @@ export default class BlockNavigationView extends ComponentView {
 
     // ----- Audio panel management -----
     ensureAudioPanel() {
+        // Only create if not already present in the DOM
+        if (this._bnAudioPanel && document.contains(this._bnAudioPanel)) return;
+
         // Create panel structure once
         const panel = document.getElementById('bn-audio-panel') || document.createElement('div');
         panel.id = 'bn-audio-panel';
         panel.className = 'bn-audio-panel';
-        panel.setAttribute('aria-hidden', 'true');
 
         // inner
         const inner = document.createElement('div');

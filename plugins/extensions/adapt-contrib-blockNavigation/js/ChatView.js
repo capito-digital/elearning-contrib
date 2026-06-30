@@ -12,6 +12,7 @@ export default class ChatView extends Backbone.View {
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onClickOutside = this.onClickOutside.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
 
         // Listen for locale/proficiency changes
         this.listenTo(Adapt, 'contentSelector:selectionChanged', this.onSelectionChanged);
@@ -121,6 +122,7 @@ export default class ChatView extends Backbone.View {
 
         // Listen for clicks outside to minimize
         document.addEventListener('mousedown', this.onClickOutside);
+        document.addEventListener('keydown', this.onKeyDown);
 
         return this;
     }
@@ -168,6 +170,12 @@ export default class ChatView extends Backbone.View {
         // Focus input when opened
         if (!this.isMinimized) {
             setTimeout(() => this.$input.focus(), 300);
+        }
+    }
+
+    onKeyDown(e) {
+        if (e.key === 'Escape' && !this.isMinimized) {
+            this.onToggle();
         }
     }
 
@@ -388,6 +396,7 @@ export default class ChatView extends Backbone.View {
             document.removeEventListener('mousemove', this.onMouseMove);
             document.removeEventListener('mouseup', this.onMouseUp);
             document.removeEventListener('mousedown', this.onClickOutside);
+            document.removeEventListener('keydown', this.onKeyDown);
         } catch (e) { /* noop */
         }
         Backbone.View.prototype.remove.call(this);
