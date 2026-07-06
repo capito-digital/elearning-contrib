@@ -194,6 +194,13 @@ class BlockNavigation extends Backbone.Controller {
         } catch (e) {
             console.warn('[blockNavigation] failed to apply explanations after selection change', e);
         }
+
+        // Update all i18n aria-labels for the new locale-proficiency
+        try {
+            this._updateI18nAttributes();
+        } catch (e) {
+            console.warn('[blockNavigation] failed to update i18n attributes after selection change', e);
+        }
     }
 
     getGlobalConfig() {
@@ -361,9 +368,19 @@ class BlockNavigation extends Backbone.Controller {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'cs-locale-toggle';
-            btn.title = 'Klicken Sie hier, um den Text einfacher zu machen, oder in einer anderen Sprache anzuzeigen.';
+            const i18nMap = this._getI18nMap();
+            const localeProfKey = `${this.currentSelection?.locale || 'de'}-${this.currentSelection?.proficiency || 'original'}`;
+            const label = i18nMap['cs.toggle.aria']?.[localeProfKey] || 'Klicken Sie hier, um den Text einfacher zu machen, oder in einer anderen Sprache anzuzeigen.';
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+            btn.setAttribute('data-i18n-aria', 'cs.toggle.aria');
+            btn.setAttribute('data-i18n-title', 'cs.toggle.aria');
+            btn.setAttribute('aria-haspopup', 'dialog');
+            btn.setAttribute('aria-expanded', 'false');
             const img = document.createElement('img');
-            img.alt = 'Aktuelle Sprache';
+            const imgAlt = i18nMap['cs.toggle.imgAlt']?.[localeProfKey] || 'Aktuelle Sprache';
+            img.alt = imgAlt;
+            img.setAttribute('data-i18n-alt', 'cs.toggle.imgAlt');
             img.src = this._getFlagPath(this.currentSelection?.locale);
             btn.appendChild(img);
             this._applyProficiencyClass(btn, this.currentSelection?.proficiency);
@@ -407,11 +424,18 @@ class BlockNavigation extends Backbone.Controller {
             panel.id = 'content-selector-panel';
             panel.className = 'cs-flag-panel';
             panel.setAttribute('aria-hidden', 'true');
+            panel.setAttribute('role', 'dialog');
+            panel.setAttribute('aria-modal', 'true');
+            const i18nMap = this._getI18nMap();
+            const lpKey = `${this.currentSelection?.locale || 'de'}-${this.currentSelection?.proficiency || 'original'}`;
+            panel.setAttribute('aria-label', i18nMap['cs.panel.aria']?.[lpKey] || 'Sprache und Sprachstufe wählen');
+            panel.setAttribute('data-i18n-aria', 'cs.panel.aria');
 
             const closeBtn = document.createElement('button');
             closeBtn.type = 'button';
             closeBtn.className = 'cs-flag-panel__close';
-            closeBtn.setAttribute('aria-label', 'Schließen');
+            closeBtn.setAttribute('aria-label', i18nMap['cs.close.aria']?.[lpKey] || 'Schließen');
+            closeBtn.setAttribute('data-i18n-aria', 'cs.close.aria');
             closeBtn.innerHTML = '&times;';
             closeBtn.addEventListener('click', () => this._toggleCsPanel(false));
 
@@ -419,7 +443,9 @@ class BlockNavigation extends Backbone.Controller {
             inner.className = 'cs-flag-panel__inner';
             const info = document.createElement('div');
             info.className = 'content-selector-info';
-            info.textContent = 'Sie können den Text einfacher machen. Klicken Sie dafür auf die Sprache und Sprachstufe, die Ihnen passt.';
+            info.id = 'content-selector-info';
+            info.textContent = i18nMap['cs.panel.info']?.[lpKey] || 'Sie können den Text einfacher machen. Klicken Sie dafür auf die Sprache und Sprachstufe, die Ihnen passt.';
+            info.setAttribute('data-i18n-text', 'cs.panel.info');
             const buttons = document.createElement('div');
             buttons.className = 'content-selector-buttons';
             buttons.id = 'content-selector-buttons';
@@ -463,13 +489,16 @@ class BlockNavigation extends Backbone.Controller {
         };
 
         sorted.forEach(([label, value]) => {
-            const item = document.createElement('div');
+            const item = document.createElement('button');
+            item.type = 'button';
             item.className = 'content-selector-item';
             item.setAttribute('data-value', value);
+            item.setAttribute('aria-pressed', 'false');
 
             const img = document.createElement('img');
             img.className = 'content-selector-btn';
-            img.alt = label || deriveLabel(value, label);
+            img.alt = '';
+            img.setAttribute('aria-hidden', 'true');
             img.src = this._getFlagPathFromValue(value);
             const [, proficiency] = (value || '').split('-');
 
@@ -482,16 +511,12 @@ class BlockNavigation extends Backbone.Controller {
                 this._selectContent(locale, proficiency);
                 this._updateCsActive();
                 this._toggleCsPanel(false);
-                if (this._cs.toggleEl && typeof this._cs.toggleEl.focus === 'function') this._cs.toggleEl.focus();
             };
             item.addEventListener('click', onSelect);
-            img.addEventListener('click', (e) => {
-                e.stopPropagation();
-                onSelect();
-            });
 
             const imgWrap = document.createElement('div');
             imgWrap.className = 'content-selector-flag';
+            imgWrap.setAttribute('aria-hidden', 'true');
             this._applyProficiencyClass(imgWrap, proficiency);
             this._applyProficiencyClass(img, proficiency);
             imgWrap.appendChild(img);
@@ -507,7 +532,9 @@ class BlockNavigation extends Backbone.Controller {
         if (!container) return;
         Array.from(container.querySelectorAll('.content-selector-item')).forEach(item => {
             const val = (item.getAttribute('data-value') || '').toLowerCase();
-            if (val === cur) item.classList.add('active'); else item.classList.remove('active');
+            const isActive = val === cur;
+            if (isActive) item.classList.add('active'); else item.classList.remove('active');
+            item.setAttribute('aria-pressed', String(isActive));
         });
     }
 
@@ -517,19 +544,29 @@ class BlockNavigation extends Backbone.Controller {
         if (!panel || !backdrop) return;
         let show = force;
         if (typeof show !== 'boolean') {
-            // Old component logic treated anything not open as hidden
             const isOpen = panel.classList.contains('is-open') || panel.getAttribute('aria-hidden') === 'false';
             show = !isOpen;
         }
-        // Mirror legacy behavior: toggle .is-open class and aria-hidden
         if (show) {
             panel.classList.add('is-open');
             backdrop.classList.add('is-open');
             panel.setAttribute('aria-hidden', 'false');
+            if (this._cs.toggleEl) this._cs.toggleEl.setAttribute('aria-expanded', 'true');
+            // Focus the close button inside the dialog
+            const closeBtn = panel.querySelector('.cs-flag-panel__close');
+            if (closeBtn) requestAnimationFrame(() => closeBtn.focus());
+            // Attach focus trap and Escape handler
+            this._attachCsPanelKeyHandler();
         } else {
             panel.classList.remove('is-open');
             backdrop.classList.remove('is-open');
             panel.setAttribute('aria-hidden', 'true');
+            if (this._cs.toggleEl) this._cs.toggleEl.setAttribute('aria-expanded', 'false');
+            this._detachCsPanelKeyHandler();
+            // Return focus to the toggle button
+            if (this._cs.toggleEl && typeof this._cs.toggleEl.focus === 'function') {
+                this._cs.toggleEl.focus();
+            }
         }
         // Keep icon in sync when opening
         if (show && this._cs.toggleEl) {
@@ -538,6 +575,99 @@ class BlockNavigation extends Backbone.Controller {
             this._applyProficiencyClass(this._cs.toggleEl, this.currentSelection?.proficiency);
             this._applyProficiencyClass(img, this.currentSelection?.proficiency);
         }
+    }
+
+    _attachCsPanelKeyHandler() {
+        if (this._csPanelKeyHandler) return;
+        this._csPanelKeyHandler = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                this._toggleCsPanel(false);
+                return;
+            }
+            if (e.key === 'Tab') {
+                this._trapFocusInCsPanel(e);
+            }
+        };
+        document.addEventListener('keydown', this._csPanelKeyHandler, true);
+    }
+
+    _detachCsPanelKeyHandler() {
+        if (this._csPanelKeyHandler) {
+            document.removeEventListener('keydown', this._csPanelKeyHandler, true);
+            this._csPanelKeyHandler = null;
+        }
+    }
+
+    _trapFocusInCsPanel(e) {
+        const panel = this._cs.panelEl;
+        if (!panel) return;
+        const focusable = panel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+            if (document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            }
+        } else {
+            if (document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+    }
+
+    // ================== i18n Attribute Updater ==================
+
+    _getI18nMap() {
+        const globals = this.getGlobalConfig();
+        return globals?._i18nMap || {};
+    }
+
+    _updateI18nAttributes() {
+        const sel = this.currentSelection;
+        if (!sel) return;
+        const localeProfKey = `${sel.locale}-${sel.proficiency}`;
+        const i18nMap = this._getI18nMap();
+
+        // Update aria-label attributes
+        document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+            const key = el.getAttribute('data-i18n-aria');
+            const map = i18nMap[key];
+            if (map && map[localeProfKey]) {
+                el.setAttribute('aria-label', map[localeProfKey]);
+            }
+        });
+
+        // Update title attributes
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const key = el.getAttribute('data-i18n-title');
+            const map = i18nMap[key];
+            if (map && map[localeProfKey]) {
+                el.setAttribute('title', map[localeProfKey]);
+            }
+        });
+
+        // Update alt attributes (prepared for future image alt-text support)
+        document.querySelectorAll('[data-i18n-alt]').forEach(el => {
+            const key = el.getAttribute('data-i18n-alt');
+            const map = i18nMap[key];
+            if (map && map[localeProfKey]) {
+                el.setAttribute('alt', map[localeProfKey]);
+            }
+        });
+
+        // Update textContent for elements with data-i18n-text
+        document.querySelectorAll('[data-i18n-text]').forEach(el => {
+            const key = el.getAttribute('data-i18n-text');
+            const map = i18nMap[key];
+            if (map && map[localeProfKey]) {
+                el.textContent = map[localeProfKey];
+            }
+        });
     }
 
     _selectContent(locale, proficiency, chapterId = null) {
@@ -1364,12 +1494,16 @@ class BlockNavigation extends Backbone.Controller {
         const overlay = document.createElement('div');
         overlay.className = 'bn-expl-overlay';
         overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-label', term || 'Explanation');
+        const i18nMap = this._getI18nMap();
+        const lpKey = `${this.currentSelection?.locale || 'de'}-${this.currentSelection?.proficiency || 'original'}`;
+        const explLabel = i18nMap['explanation.overlay.aria']?.[lpKey] || 'Explanation';
+        const closeLabel = i18nMap['explanation.close.aria']?.[lpKey] || 'Close';
+        overlay.setAttribute('aria-label', term || explLabel);
         overlay.innerHTML = `
             <div class="bn-expl-overlay__inner">
               <div class="bn-expl-overlay__header">
                 <span class="bn-expl-overlay__title">${this._escapeHtml(term)}</span>
-                <button class="bn-expl-overlay__close" aria-label="Close">×</button>
+                <button class="bn-expl-overlay__close" aria-label="${this._escapeHtml(closeLabel)}" data-i18n-aria="explanation.close.aria">×</button>
               </div>
               <div class="bn-expl-overlay__body">${this._escapeHtml(text)}</div>
             </div>`;

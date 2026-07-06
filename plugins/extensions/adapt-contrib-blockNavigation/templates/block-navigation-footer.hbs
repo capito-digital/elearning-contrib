@@ -6,8 +6,10 @@
             <div class="block-navigation__tts">
                 <button class="block-navigation__btn block-navigation__btn--tts js-tts-toggle"
                         aria-pressed="{{#if ttsEnabled}}true{{else}}false{{/if}}"
-                        aria-label="Toggle text-to-speech"
-                        title="Vorlese-Funktion ein-/ausschalten">
+                        aria-label="Vorlese-Funktion einschalten oder ausschalten"
+                        data-i18n-aria="tts.toggle.aria"
+                        title="Vorlese-Funktion ein-/ausschalten"
+                        data-i18n-title="tts.toggle.aria">
                     {{#if ttsEnabled}}🔊{{else}}🔈{{/if}}
                 </button>
                 <!-- The audio controls panel will be injected here and slide out to the right -->
@@ -27,7 +29,7 @@
     <div id="cs-dialog" class="cs-dialog" aria-hidden="true" role="dialog" aria-modal="true">
         <div class="cs-dialog__overlay" data-cs-dialog-close></div>
         <div class="cs-dialog__panel" role="document">
-            <button type="button" class="cs-dialog__close" aria-label="Close" data-cs-dialog-close>
+            <button type="button" class="cs-dialog__close" aria-label="Close" data-i18n-aria="cs.dialog.close.aria" data-cs-dialog-close>
                 ×
             </button>
             <div id="cs-dialog-content" class="cs-dialog__content"></div>

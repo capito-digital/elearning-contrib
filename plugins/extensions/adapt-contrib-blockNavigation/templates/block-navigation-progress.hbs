@@ -2,13 +2,15 @@
   <div class="block-navigation-progress-container__inner">
     <button class="block-navigation__btn block-navigation__btn--prev js-block-nav-prev"
             aria-label="{{_globals._extensions._blockNavigation._buttons._previous.ariaLabel}}"
+            data-i18n-aria="buttons.previous.aria"
             {{#if disablePrev}}disabled title="{{_globals._extensions._blockNavigation._buttons._previous.disabledTooltip}}"{{/if}}>
       {{{_globals._extensions._blockNavigation._buttons._previous.text}}}
     </button>
     <progress id="progressbar" value={{progress}} max="100" aria-label="{{progressAria}}" title="{{progressText}}"></progress>
-    <button type="button" class="block-navigation__btn block-navigation__btn--chat js-chat-open" title="Chat öffnen" aria-label="Chat öffnen">🤖</button>
+    <button type="button" class="block-navigation__btn block-navigation__btn--chat js-chat-open" title="Chat öffnen" aria-label="Chat öffnen" data-i18n-aria="chat.open.aria" data-i18n-title="chat.open.aria">🤖</button>
     <button class="block-navigation__btn block-navigation__btn--next js-block-nav-next"
             aria-label="{{#if nextButtonAria}}{{nextButtonAria}}{{else}}{{_globals._extensions._blockNavigation._buttons._next.ariaLabel}}{{/if}}"
+            data-i18n-aria="buttons.next.aria"
             {{#if disableNext}}disabled title="{{_globals._extensions._blockNavigation._buttons._next.disabledTooltip}}"{{/if}}>
       {{#if nextButtonText}}{{{nextButtonText}}}{{else}}{{{_globals._extensions._blockNavigation._buttons._next.text}}}{{/if}}
     </button>

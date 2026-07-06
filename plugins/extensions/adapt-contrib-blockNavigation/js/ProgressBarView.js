@@ -39,7 +39,7 @@ export default class ProgressBarView extends Backbone.View {
 
     computeProgressStrings(data) {
         const globals = data?._globals?._extensions?._blockNavigation || {};
-        const textTpl = globals._progressIndicator?.text || 'Inhalt {current} von {total}';
+        const textTpl = globals._progressIndicator?.text || 'Sie sind bei Inhalt {current} von {total}';
         const ariaTpl = globals._progressIndicator?.ariaLabel || textTpl;
         const replace = (tpl) => String(tpl)
             .replace('{current}', data.current)

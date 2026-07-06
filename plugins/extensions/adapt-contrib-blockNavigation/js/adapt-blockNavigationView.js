@@ -232,6 +232,7 @@ export default class BlockNavigationView extends ComponentView {
         btnRestart.type = 'button';
         btnRestart.title = 'Von Anfang an';
         btnRestart.setAttribute('aria-label', 'Wiedergabe neu starten');
+        btnRestart.setAttribute('data-i18n-aria', 'tts.restart.aria');
         btnRestart.textContent = '⟲';
         btnRestart.addEventListener('click', () => {
             if (!this._audio) return;
@@ -248,6 +249,7 @@ export default class BlockNavigationView extends ComponentView {
         btnPlay.title = 'Abspielen/Pause';
         btnPlay.setAttribute('aria-pressed', 'false');
         btnPlay.setAttribute('aria-label', 'Abspielen');
+        btnPlay.setAttribute('data-i18n-aria', 'tts.play.aria');
         btnPlay.textContent = '▶';
         btnPlay.addEventListener('click', () => {
             if (!this._audio) return;

@@ -127,6 +127,7 @@ function createOverlayWidget(targetInput) {
     btn.className = 'stt-btn';
     btn.title = 'Start/Stop recording';
     btn.setAttribute('aria-label', 'Start or stop recording');
+    btn.setAttribute('data-i18n-aria', 'record.aria');
     btn.textContent = '🎤';
 
     const bars = createBars();
