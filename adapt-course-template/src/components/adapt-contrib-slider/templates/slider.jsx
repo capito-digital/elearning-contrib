@@ -110,13 +110,14 @@ export default function Slider (props) {
                   className="slider__number js-slider-number js-slider-number-click"
                   data-id={value}
                   aria-disabled= {_isInteractionComplete || null}
+                  aria-label={_isInteractionComplete ? value : null}
                   style={{ left: `${calculatePercentFromIndex(index)}%` }}
                   onClick={e => onNumberSelected(parseFloat(e.currentTarget.getAttribute('data-id')))}
                 >
                   {_shouldShowMarking && _isInteractionComplete &&
                   <span className="aria-label">{`${correct ? ariaLabels.correct : ariaLabels.incorrect}, ${selectedValue === value ? ariaLabels.selectedAnswer : ariaLabels.unselectedAnswer}. ${scaleStepPrefix}${value}${scaleStepSuffix}`}</span>
                   }
-                  <span aria-hidden="true">{scaleStepPrefix}{value}{scaleStepSuffix}</span>
+                  <span>{scaleStepPrefix}{value}{scaleStepSuffix}</span>
                 </div>
               );
             })
