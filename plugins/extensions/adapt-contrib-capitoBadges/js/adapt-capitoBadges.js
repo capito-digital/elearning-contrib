@@ -386,7 +386,7 @@ class CapitoBadges extends Backbone.Controller {
                     html += '<div class="cs-badges">';
                     data.earned_badges.forEach(badge => {
                         const imgUrl = `assets/${badge.locale}_${badge.level}${badge.is_new ? "_new" : ""}.png`;
-                        html += `<div><img src="${imgUrl}"  alt="${badge.locale} ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
+                        html += `<div><img src="${imgUrl}" aria-hidden="true" ${badge.level}"/><span>${badge.language_name} - ${badge.level_label}</span></div>`;
                     });
                     html += '</div>';
                 }

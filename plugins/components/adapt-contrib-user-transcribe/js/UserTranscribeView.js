@@ -126,7 +126,7 @@ function createOverlayWidget(targetInput) {
     btn.type = 'button';
     btn.className = 'stt-btn';
     btn.title = 'Start/Stop recording';
-    btn.setAttribute('aria-label', 'Start or stop recording');
+    btn.setAttribute('aria-label', 'Aufnahme starten oder stoppen');
     btn.setAttribute('data-i18n-aria', 'record.aria');
     btn.textContent = '🎤';
 

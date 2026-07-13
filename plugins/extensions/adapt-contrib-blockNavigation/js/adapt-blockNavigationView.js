@@ -146,13 +146,27 @@ export default class BlockNavigationView extends ComponentView {
     }
 
     updateState() {
-        this.render();
+        // Only render once (first mount). Subsequent updates mutate the DOM in place
+        // via sub-view updateState() to avoid destroying the currently-focused
+        // Next/Prev button. Destroying the focused element causes screen readers
+        // to fall back to reading the document title / previously-focused button.
+        if (!this._hasRendered) {
+            this.render();
+            this._hasRendered = true;
+        }
 
         const data = this.model.toJSON();
 
-        // Update sub-views state
+        // Update sub-views state (non-destructive in-place updates)
         if (this.topBarView) {
             this.topBarView.updateState();
+        }
+        if (this.progressBarView) {
+            if (typeof this.progressBarView.updateState === 'function') {
+                this.progressBarView.updateState();
+            } else {
+                this.progressBarView.render();
+            }
         }
 
         // Manage the external audio panel visibility and state

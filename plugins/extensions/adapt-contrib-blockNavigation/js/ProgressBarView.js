@@ -10,7 +10,10 @@ export default class ProgressBarView extends Backbone.View {
     initialize(options) {
         this.parentView = options.parentView;
         this.completionStored = false;
-        this.listenTo(this.model, 'change:current change:total', this.render);
+        // Do NOT bind render() to model changes: re-rendering the progress container
+        // destroys the currently-focused Next/Prev button and causes screen readers
+        // to lose focus / re-announce the removed element. Use updateState() instead,
+        // which is triggered explicitly by BlockNavigationView.updateState().
         this.listenTo(Adapt, 'blockNavigation:completionStored', this.onCompletionStored);
     }
 
@@ -153,7 +156,67 @@ export default class ProgressBarView extends Backbone.View {
 
     onCompletionStored() {
         this.completionStored = true;
-        this.render();
+        this.updateState();
+    }
+
+    updateState() {
+        // Non-destructive in-place update of prev/next buttons and progress bar.
+        // This preserves DOM identity of the currently-focused button so that
+        // screen-reader focus is not lost during block navigation.
+        const data = this.model.toJSON();
+        const {progressText, progressAria} = this.computeProgressStrings(data);
+        const isLast = this.isLastItem();
+        const completeStrings = this.getCompleteButtonStrings(data);
+        const backToOverviewStrings = this.getBackToOverviewButtonStrings(data);
+        const globals = data?._globals?._extensions?._blockNavigation || {};
+        const nextBtnCfg = globals._buttons?._next || {};
+        const prevBtnCfg = globals._buttons?._previous || {};
+
+        // If not yet rendered (no children), fall back to full render.
+        if (!this.el || !this.el.children || this.el.children.length === 0) {
+            return this.render();
+        }
+
+        // Progress bar
+        const $progress = this.$('#progressbar');
+        if ($progress && $progress.length) {
+            $progress.attr('value', this.getProgressbarValue(data.current, data.total));
+            $progress.attr('aria-label', progressAria);
+            $progress.attr('title', progressText);
+        }
+
+        // Prev button
+        const $prev = this.$('.js-block-nav-prev');
+        if ($prev && $prev.length) {
+            $prev.prop('disabled', !!data.disablePrev);
+            $prev.attr('aria-label', prevBtnCfg.ariaLabel || '');
+            if (data.disablePrev) {
+                $prev.attr('title', prevBtnCfg.disabledTooltip || '');
+            } else {
+                $prev.removeAttr('title');
+            }
+            // Keep text in sync (may not change, but harmless)
+            if (prevBtnCfg.text != null) $prev.html(prevBtnCfg.text);
+        }
+
+        // Next button
+        const $next = this.$('.js-block-nav-next');
+        if ($next && $next.length) {
+            const nextText = isLast
+                ? (this.completionStored ? backToOverviewStrings.text : completeStrings.text)
+                : nextBtnCfg.text;
+            const nextAria = isLast
+                ? (this.completionStored ? backToOverviewStrings.aria : completeStrings.aria)
+                : nextBtnCfg.ariaLabel;
+            $next.prop('disabled', !!data.disableNext);
+            $next.attr('aria-label', nextAria || '');
+            if (data.disableNext) {
+                $next.attr('title', nextBtnCfg.disabledTooltip || '');
+            } else {
+                $next.removeAttr('title');
+            }
+            if (nextText != null) $next.html(nextText);
+        }
     }
 
 }

@@ -2,6 +2,7 @@ import Adapt from 'core/js/adapt';
 import BlockNavigationView from './adapt-blockNavigationView';
 import ChatView from './ChatView';
 import data from 'core/js/data';
+import a11y from 'core/js/a11y';
 
 
 class BlockNavigation extends Backbone.Controller {
@@ -802,6 +803,28 @@ class BlockNavigation extends Backbone.Controller {
             };
             document.addEventListener('keydown', this._onDlgEsc);
         }
+        // Focus trap inside the dialog (Tab / Shift+Tab cycle within dialog)
+        if (!this._onDlgKeydown) {
+            this._onDlgKeydown = (e) => {
+                if (e.key !== 'Tab') return;
+                const dialog = document.getElementById('cs-dialog');
+                if (!dialog || dialog.getAttribute('aria-hidden') === 'true') return;
+                const focusables = dialog.querySelectorAll(
+                    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                );
+                if (!focusables.length) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            };
+            document.addEventListener('keydown', this._onDlgKeydown);
+        }
     }
 
     _showCsDialog(html) {
@@ -809,14 +832,52 @@ class BlockNavigation extends Backbone.Controller {
         const dlg = document.getElementById('cs-dialog');
         const content = document.getElementById('cs-dialog-content');
         if (!dlg || !content) return;
+        // Remember which element had focus so we can restore it on close
+        this._csDialogPreviousFocus = document.activeElement;
         content.innerHTML = html || '';
+
+        // Provide an accessible name for the dialog by referencing the first heading
+        // inside the injected content (WAI-ARIA APG "Dialog (Modal)" pattern).
+        const heading = content.querySelector('h1, h2, h3, h4, h5, h6');
+        if (heading) {
+            dlg.setAttribute('aria-labelledby', heading.id);
+        } else {
+            dlg.removeAttribute('aria-labelledby');
+            dlg.setAttribute('aria-label', 'Dialog');
+        }
+
         dlg.setAttribute('aria-hidden', 'false');
+        dlg.setAttribute('aria-modal', 'true');
+
+        // Defer focus until after the dialog is actually in the a11y tree / rendered.
+        // Focus a meaningful interactive child (the close button) rather than the
+        // dialog container itself — this is what screen readers reliably announce.
+        window.requestAnimationFrame(() => {
+            const focusTarget = heading || dlg;
+            focusTarget.setAttribute('tabindex', '-1');
+            focusTarget.focus();
+        });
     }
 
     _closeCsDialog() {
         const dlg = document.getElementById('cs-dialog');
         if (!dlg) return;
         dlg.setAttribute('aria-hidden', 'true');
+
+        // Restore focus: prefer the block-navigation "next" button, then fall back
+        // to whatever was focused before the dialog opened.
+        window.requestAnimationFrame(() => {
+            const nextBtn = document.querySelector('.js-block-nav-next');
+            if (nextBtn && typeof nextBtn.focus === 'function') {
+                nextBtn.focus();
+                return;
+            }
+            const prev = this._csDialogPreviousFocus;
+            if (prev && typeof prev.focus === 'function' && document.body.contains(prev)) {
+                prev.focus();
+            }
+            this._csDialogPreviousFocus = null;
+        });
     }
 
     // Expose simple global helpers for backwards compatibility
@@ -859,12 +920,41 @@ class BlockNavigation extends Backbone.Controller {
         if (!this.navBlocks.length) return;
         if (index < 0 || index >= this.navBlocks.length) return;
         const oldIndex = this.currentIndex;
+        const oldBlock = this.navBlocks[oldIndex];
+        const newBlock = this.navBlocks[index];
+        const articleChanged = oldBlock && newBlock && oldBlock.get('_parentId') !== newBlock.get('_parentId');
         this.currentIndex = index;
-        console.log('[blockNavigation] showBlock', {oldIndex, newIndex: index, total: this.navBlocks.length});
-        this.navBlocks.forEach((b, i) => this._setBlockHidden(b, i !== index));
+        console.log('[blockNavigation] showBlock', {
+            oldIndex,
+            newIndex: index,
+            total: this.navBlocks.length,
+            articleChanged
+        });
+
+        // Do ALL DOM mutations first, so the currently-focused Next/Prev button
+        // is not destroyed while it still has focus. Then defer focus movement
+        // to the next animation frame so layout has been committed and the new
+        // target is actually focusable.
+
+        // 1. Show the new block
+        this._setBlockHidden(newBlock, false);
+
+        // 2. Hide all other blocks
+        this.navBlocks.forEach((b, i) => {
+            if (i !== index) this._setBlockHidden(b, true);
+        });
+
+        // 3. Update headings so focus targets are ready
         this._updateArticleHeadings();
+
+        // 4. Update the footer (non-destructive: preserves focus on Next button)
         this.createOrUpdateFooter();
-        this.announceCurrent();
+
+        // 5. After layout is committed, move focus to the new block / navigation title
+        requestAnimationFrame(() => {
+            this.announceCurrent(articleChanged);
+        });
+
         Adapt.trigger('blockNavigation:changed', {oldIndex, newIndex: index});
         this.checkAllCompleted();
 
@@ -872,22 +962,44 @@ class BlockNavigation extends Backbone.Controller {
         if (this.ttsEnabled) this._playTTSForCurrentBlock();
     }
 
-    announceCurrent() {
-        const total = this.navBlocks.length;
-        const msg = `Navigated to block ${this.currentIndex + 1} of ${total}`;
-        if (Adapt.a11y?.announce) Adapt.a11y.announce(msg);
-        // Focus the first component in the block so screen readers start reading its content
+    announceCurrent(articleChanged = false) {
+        // Note: we intentionally do NOT call Adapt.a11y.announce() here.
+        // Moving focus is the industry-standard pattern (WAI-ARIA APG) for
+        // navigation actions, and most screen readers drop pending polite
+        // aria-live announcements when focus moves — causing double / garbled
+        // announcements. We rely on focus management alone.
+
+        // When crossing article (chapter) boundaries, focus the article/chapter title
+        if (articleChanged) {
+            const focusElement = $(`.block-navigation__title`);
+            a11y.focusFirst(focusElement);
+            return;
+        }
+
+        // Same chapter: focus the block's heading element (semantic, has an
+        // accessible name). Falling back to the component wrapper or block itself.
+        // The component wrapper typically has role="presentation" and no accessible
+        // name, which causes SR to read ancestor/document context instead.
         const $blockEl = this._getBlock$(this.currentBlock());
-        if ($blockEl && $blockEl.length) {
+        if (!$blockEl || !$blockEl.length) return;
+
+        let targetEl = null;
+        const $heading = $blockEl.find('[role="heading"]').first();
+        if ($heading && $heading.length) {
+            targetEl = $heading.get(0);
+        } else {
             const $component = $blockEl.find('.component').first();
-            const targetEl = ($component && $component.length) ? $component.get(0) : $blockEl.get(0);
-            if (!targetEl.getAttribute('tabindex')) {
-                targetEl.setAttribute('tabindex', '-1');
-            }
-            targetEl.focus();
-            try {
-                targetEl.scrollIntoView({behavior: 'smooth', block: 'start'});
-            } catch (e) { /* noop */ }
+            targetEl = ($component && $component.length) ? $component.get(0) : $blockEl.get(0);
+        }
+
+        if (!targetEl) return;
+        if (!targetEl.getAttribute('tabindex')) {
+            targetEl.setAttribute('tabindex', '-1');
+        }
+        targetEl.focus();
+        try {
+            targetEl.scrollIntoView({behavior: 'smooth', block: 'start'});
+        } catch (e) { /* noop */
         }
     }
 

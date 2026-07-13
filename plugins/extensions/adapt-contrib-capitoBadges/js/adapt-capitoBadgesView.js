@@ -78,10 +78,12 @@ export default class CapitoBadgesView extends ComponentView {
             });
             html += '</div>';
             const target = badges_per_page_disabled
-                ? document.getElementsByClassName("boxmenu__header-inner")[0].lastChild
+                ? document.getElementsByClassName("boxmenu__header-inner")[0]?.lastChild
                 : Array.from(menuContainers).find((el) =>
                     el.classList.contains(`page-id-${page.page_id}`)
                 )?.querySelector('.boxmenu-item__progress');
+            if (target == null)
+                return
 
             let more_badges_possible = badges.filter(badge => badge.level == "gold" && badge.locale == "de").length == 0;
             if (more_badges_possible) {

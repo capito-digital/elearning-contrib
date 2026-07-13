@@ -72,6 +72,17 @@ export default class TopBarView extends Backbone.View {
             .prop('disabled', !!data.disableNext)
             .prop('title', nextTooltip || '');
 
+        // Update title text in place (avoid re-rendering the whole top bar,
+        // which would destroy any element that currently has focus, e.g. the Next button)
+        const $title = this.$('.block-navigation__title h1');
+        if ($title && $title.length) {
+            const currentTitle = $title.html();
+            const newTitle = data.title != null ? String(data.title) : '';
+            if (currentTitle !== newTitle) {
+                $title.html(newTitle);
+            }
+        }
+
         // Reflect TTS toggle state
         const $tts = this.$('.js-tts-toggle');
         if ($tts && $tts.length) {
