@@ -1,4 +1,5 @@
 import ComponentView from 'core/js/views/componentView';
+import notify from 'core/js/notify';
 
 class GraphicView extends ComponentView {
 
@@ -75,12 +76,30 @@ class GraphicView extends ComponentView {
 
     const item = this.model.get('_graphic');
     const { _url: url, _target: target = '_blank' } = item;
+    if (!url) return this.openPopup();
 
     const isNewWindow = (target !== '_self');
     if (isNewWindow) return window.open(url, target);
     const isRouterNavigation = (url.substr(0, 1) === '#');
     if (isRouterNavigation) return Backbone.history.navigate(url, { trigger: true });
     window.location.href = url;
+  }
+
+  openPopup() {
+    const item = this.model.get('_graphic');
+    const popupImageSrc = item.large || item.src;
+    if (!popupImageSrc) return;
+
+    const imageAlt = _.escape(item.alt || '');
+    const imageSrc = _.escape(popupImageSrc);
+    const title = this.model.get('displayTitle') || this.model.get('title') || '';
+    const body = `<div class="graphic__popup-image"><img class="graphic__popup-image-inner" src="${imageSrc}" alt="${imageAlt}"></div>`;
+
+    notify.popup({
+      title,
+      body,
+      _classes: `graphic is-component is-graphic ${this.model.get('_classes') || ''}`
+    });
   }
 
   preRemove() {

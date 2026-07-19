@@ -1,0 +1,34 @@
+.graphic {
+
+  .graphic__link {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: inherit;
+    cursor: pointer;
+  }
+
+  &.is-scrollable .graphic__image-container {
+    display: block;
+    width: 100%;
+    overflow-x: scroll;
+    overflow-y: hidden;
+  }
+
+  &.is-scrollable .graphic__image-container img {
+    max-width: initial;
+  }
+
+  .graphic__popup-image-inner {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 8rem);
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+}

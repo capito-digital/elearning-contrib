@@ -1,10 +1,10 @@
 import React from 'react';
 import { templates } from 'core/js/reactHelpers';
 
-const LinkWrapper = ({ href, children, target, className, role }) =>
+const LinkWrapper = ({ href, children, target, className, role, ariaLabel }) =>
   href
     ? <a href={href} target={target} className={className} role={role}>{children}</a>
-    : children;
+    : <button type='button' className={className} aria-label={ariaLabel}>{children}</button>;
 
 export default function Graphic(props) {
   const {
@@ -12,6 +12,8 @@ export default function Graphic(props) {
     _isScrollable,
     _scrollPercent,
     _graphic,
+    title,
+    displayTitle,
     _globals
   } = props;
 
@@ -29,6 +31,7 @@ export default function Graphic(props) {
       tabIndex: '0'
     }
     : {};
+  const popupAriaLabel = _graphic.alt || displayTitle || title || 'Open graphic';
   return (
     <div className='component__inner graphic__inner'>
 
@@ -41,6 +44,7 @@ export default function Graphic(props) {
           target = {_graphic._target || null}
           className = 'graphic__link js-graphic-link'
           role = 'link'
+          ariaLabel = {popupAriaLabel}
         >
 
           <templates.image {..._graphic}
