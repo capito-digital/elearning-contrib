@@ -185,6 +185,13 @@ class BlockNavigation extends Backbone.Controller {
         console.log('[blockNavigation] selectionChanged', this.currentSelection);
         this._stopAudio();
 
+        // Keep <html lang> in sync with the selected locale
+        try {
+            this._applyDocumentLanguage();
+        } catch (e) {
+            console.warn('[blockNavigation] failed to apply document language after selection change', e);
+        }
+
         if (this.ttsEnabled) {
             this._playTTSForCurrentBlock();
         }
@@ -720,6 +727,26 @@ class BlockNavigation extends Backbone.Controller {
         const prof = (this.currentSelection?.proficiency || 'original').toLowerCase();
         const css = `\n/* Content Selector dynamic rules (auto-generated) */\n.localized-content { display: none !important; aria-hidden: true; }\n.localized-block { display: none !important; aria-hidden: true; }\n.localized-content.locale-${loc}.proficiency-${prof} { display: inline !important; aria-hidden: false; }\n.localized-block.locale-${loc}.proficiency-${prof} { display: block !important; aria-hidden: false; }\n`;
         this._cs.styleEl.textContent = css;
+    }
+
+    /**
+     * Keep `<html lang>` in sync with the selected locale.
+     *
+     * `lang` is otherwise baked in at build time from `config._defaultLanguage` ("de") and never
+     * changes, so after switching to English a screen reader keeps announcing the content with a
+     * German voice/pronunciation — unusable. Proficiency is deliberately ignored: B1 German is
+     * still `de`.
+     *
+     * Every locale variant is present in the DOM at once and hidden with `display: none`
+     * (see `_applyCsVisibilityCSS`), which does remove the inactive ones from the accessibility
+     * tree — so a single document-level `lang` is enough and no per-element `lang` is needed.
+     */
+    _applyDocumentLanguage() {
+        const locale = (this.currentSelection?.locale || 'de').toLowerCase();
+        const root = document.documentElement;
+        if (!root || root.getAttribute('lang') === locale) return;
+        root.setAttribute('lang', locale);
+        console.log('[blockNavigation] document language set to', locale);
     }
 
     _readStoredSelection() {
