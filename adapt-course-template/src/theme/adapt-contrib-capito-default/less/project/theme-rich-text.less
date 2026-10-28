@@ -2,14 +2,16 @@
 // Rich text (CAI-457)
 // --------------------------------------------------
 // Typography of text content, and the elements of the text vocabulary as the
-// course generator renders them (elearning-core app/utils/rich_text):
-//   .rt-key        key message                 <p>
-//   .rt-checklist  do / don't checklist        <ul>, items --yes / --no
-//   .rt-callout    tip/rule/warning/example/summary box  <div role="note">
-//   .rt-quote      quote with source           <figure><blockquote><figcaption>
-//   .rt-subheading subheading                  <h3> (or the level the outline needs)
-//   dl             definitions
-// Accent colours derive from @primary, so every tenant keeps its own colour.
+// course generator renders them (elearning-core app/text_markup/render.py, to_adapt_html):
+//   .rt-key          key message                 <p>
+//   .rt-checklist    do / don't checklist        <ul>, items --yes / --no, content in .rt-checklist__text
+//   .rt-callout      tip/rule/warning/example/summary box  <div role="note">
+//   .rt-quote        quote with source           <figure><blockquote><figcaption>
+//   .rt-subheading   subheading                  <h3> (or the level the outline needs)
+//   .rt-definitions  definitions                 <dl>
+// Hidden status text uses core's .visually-hidden.
+// Accent colours derive from @primary, so every tenant keeps its own colour; where they carry
+// small text or a glyph on a light background, a light @primary is darkened for contrast.
 // Icons are CSS masks: decorative, never in the text a screen reader or TTS reads.
 
 @rt-measure: 43rem; // ~690px, ~65 characters at the body size
@@ -17,6 +19,16 @@
 @rt-muted-color: mix(@font-color, @white, 70%);
 @rt-tint: mix(@primary, @white, 7%);
 @rt-line-height: 1.7;
+@rt-paragraph-gap: 0.9em;
+
+// @primary as small text on the light tint (WCAG AA needs ~4.5:1, i.e. luma below ~16%):
+// a mid colour is darkened a little, a light one (yellow, light green) a lot.
+@rt-accent-text: if((luma(@primary) > 35%), mix(@primary, #000, 40%),
+  if((luma(@primary) > 16%), mix(@primary, #000, 65%), @primary));
+// glyph colour on a @primary circle: white, unless @primary is too light for it
+@rt-on-primary: if((luma(@primary) > 45%), @rt-text-color, @white);
+@rt-no-mark: mix(@font-color, @white, 10%);
+@rt-no-mark-glyph: mix(@font-color, @white, 75%);
 
 // icons (24px, stroke 2, currentColor drawn through the mask)
 @rt-icon-tip: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z'/%3E%3C/svg%3E";
@@ -32,10 +44,10 @@
   mask: url(@url) center / contain no-repeat;
 }
 
-// Typography of all text content (bold titles: @component-title-weight)
+// Typography of all body text (bold titles: @component-title-weight)
 // --------------------------------------------------
-.chapter-content .component__body-inner {
-  max-width: @rt-measure;
+// Paragraph margins are set on both sides, so neighbouring margins collapse to one gap.
+.component__body-inner {
   color: @rt-text-color;
   line-height: @rt-line-height;
 
@@ -45,21 +57,18 @@
     line-height: @rt-line-height;
   }
 
-  p + p {
-    margin-top: 0.9em;
+  p {
+    margin: @rt-paragraph-gap 0;
   }
 }
 
-.rt-visually-hidden {
-  position: absolute !important;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+// The narrower measure is for reading text: text slides and the text of text-image slides.
+// Question components keep their layout.
+.text.chapter-content,
+.graphic.chapter-content {
+  .component__body-inner {
+    max-width: @rt-measure;
+  }
 }
 
 // Subheading
@@ -138,19 +147,28 @@
       content: "";
       position: absolute;
       inset: 0.4rem;
-      background-color: @white;
+      background-color: @rt-on-primary;
       .rt-mask(@rt-icon-check);
     }
+  }
+
+  // the item's content flows as one block next to the mark
+  .rt-checklist__text {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    > p:first-child { margin-top: 0; }
+    > p:last-child { margin-bottom: 0; }
   }
 
   .rt-checklist__item--no {
     color: @rt-muted-color;
 
     .rt-checklist__mark {
-      background-color: #e9e9e9;
+      background-color: @rt-no-mark;
 
       &::after {
-        background-color: #555555;
+        background-color: @rt-no-mark-glyph;
         .rt-mask(@rt-icon-cross);
       }
     }
@@ -180,7 +198,7 @@
       content: "";
       position: absolute;
       inset: 0.7rem;
-      background-color: @white;
+      background-color: @rt-on-primary;
       .rt-mask(@rt-icon-tip);
     }
   }
@@ -191,6 +209,11 @@
 
     > :last-child {
       margin-bottom: 0;
+    }
+
+    // the label sits directly above the first paragraph
+    .rt-callout__label + * {
+      margin-top: 0;
     }
 
     p,
@@ -206,7 +229,7 @@
     font-weight: @font-weight-bold;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: @primary;
+    color: @rt-accent-text;
   }
 
   &.rt-callout--rule .rt-callout__icon::after { .rt-mask(@rt-icon-rule); }
@@ -242,7 +265,7 @@
 
 // Definitions
 // --------------------------------------------------
-.component__body-inner dl {
+.component__body-inner .rt-definitions {
   margin: 0.8em 0;
 
   dt {
