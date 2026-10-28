@@ -1,0 +1,285 @@
+// --------------------------------------------------
+// Rich text (CAI-457)
+// --------------------------------------------------
+// Typography of text content, and the elements of the text vocabulary as the
+// course generator renders them (elearning-core app/text_markup/render.py, to_adapt_html):
+//   .rt-key          key message                 <p>
+//   .rt-checklist    do / don't checklist        <ul>, items --yes / --no, content in .rt-checklist__text
+//   .rt-callout      tip/rule/warning/example/summary box  <div role="note">
+//   .rt-quote        quote with source           <figure><blockquote><figcaption>
+//   .rt-subheading   subheading                  <h3> (or the level the outline needs)
+//   .rt-definitions  definitions                 <dl>
+// Hidden status text uses core's .visually-hidden.
+// Accent colours derive from @primary, so every tenant keeps its own colour; where they carry
+// small text or a glyph on a light background, a light @primary is darkened for contrast.
+// Icons are CSS masks: decorative, never in the text a screen reader or TTS reads.
+
+@rt-measure: 43rem; // ~690px, ~65 characters at the body size
+@rt-text-color: @font-color;
+@rt-muted-color: mix(@font-color, @white, 70%);
+@rt-tint: mix(@primary, @white, 7%);
+@rt-line-height: 1.7;
+@rt-paragraph-gap: 0.9em;
+
+// @primary as small text on the light tint (WCAG AA needs ~4.5:1, i.e. luma below ~16%):
+// a mid colour is darkened a little, a light one (yellow, light green) a lot.
+@rt-accent-text: if((luma(@primary) > 35%), mix(@primary, #000, 40%),
+  if((luma(@primary) > 16%), mix(@primary, #000, 65%), @primary));
+// glyph colour on a @primary circle: white, unless @primary is too light for it
+@rt-on-primary: if((luma(@primary) > 45%), @rt-text-color, @white);
+@rt-no-mark: mix(@font-color, @white, 10%);
+@rt-no-mark-glyph: mix(@font-color, @white, 75%);
+
+// icons (24px, stroke 2, currentColor drawn through the mask)
+@rt-icon-tip: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z'/%3E%3C/svg%3E";
+@rt-icon-rule: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z'/%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5'/%3E%3C/svg%3E";
+@rt-icon-warning: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'/%3E%3Cpath d='M12 9v4M12 17h.01'/%3E%3C/svg%3E";
+@rt-icon-example: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E";
+@rt-icon-summary: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01'/%3E%3C/svg%3E";
+@rt-icon-check: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E";
+@rt-icon-cross: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E";
+
+.rt-mask(@url) {
+  -webkit-mask: url(@url) center / contain no-repeat;
+  mask: url(@url) center / contain no-repeat;
+}
+
+// Typography of all body text (bold titles: @component-title-weight)
+// --------------------------------------------------
+// Paragraph margins are set on both sides, so neighbouring margins collapse to one gap.
+.component__body-inner {
+  color: @rt-text-color;
+  line-height: @rt-line-height;
+
+  p,
+  li,
+  dd {
+    line-height: @rt-line-height;
+  }
+
+  p {
+    margin: @rt-paragraph-gap 0;
+  }
+}
+
+// The narrower measure is for reading text: text slides and the text of text-image slides.
+// Question components keep their layout.
+.text.chapter-content,
+.graphic.chapter-content {
+  .component__body-inner {
+    max-width: @rt-measure;
+  }
+}
+
+// Subheading
+// --------------------------------------------------
+.component__body-inner .rt-subheading {
+  margin: 1.4em 0 0.4em;
+  font-size: 1.4rem;
+  font-weight: @font-weight-bold;
+  line-height: 1.3;
+  color: @heading-color;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+// Key message
+// --------------------------------------------------
+.component__body-inner .rt-key {
+  margin: 1.6em auto 0.6em;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: @font-weight-light;
+  line-height: 1.4;
+  color: @rt-text-color;
+
+  &::before {
+    content: "";
+    display: block;
+    width: 4rem;
+    height: 0.25rem;
+    margin: 0 auto 1.1em;
+    border-radius: 0.125rem;
+    background-color: @primary;
+  }
+
+  &:first-child {
+    margin-top: 0.4em;
+  }
+}
+
+// Checklist
+// --------------------------------------------------
+.component__body-inner .rt-checklist {
+  list-style: none;
+  margin: 0.8em 0;
+  padding: 0;
+
+  .rt-checklist__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.7em 0;
+    border-bottom: 1px solid mix(@font-color, @white, 12%);
+    list-style: none;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &::before,
+    &::marker {
+      content: none;
+    }
+  }
+
+  .rt-checklist__mark {
+    flex: 0 0 1.75rem;
+    height: 1.75rem;
+    margin-top: 0.1rem;
+    border-radius: 50%;
+    background-color: @primary;
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0.4rem;
+      background-color: @rt-on-primary;
+      .rt-mask(@rt-icon-check);
+    }
+  }
+
+  // the item's content flows as one block next to the mark
+  .rt-checklist__text {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    > p:first-child { margin-top: 0; }
+    > p:last-child { margin-bottom: 0; }
+  }
+
+  .rt-checklist__item--no {
+    color: @rt-muted-color;
+
+    .rt-checklist__mark {
+      background-color: @rt-no-mark;
+
+      &::after {
+        background-color: @rt-no-mark-glyph;
+        .rt-mask(@rt-icon-cross);
+      }
+    }
+  }
+}
+
+// Callout
+// --------------------------------------------------
+.component__body-inner .rt-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  margin: 1em 0;
+  padding: 1.2rem 1.5rem;
+  border-inline-start: 0.375rem solid @primary;
+  border-radius: 0.625rem;
+  background-color: @rt-tint;
+
+  .rt-callout__icon {
+    flex: 0 0 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background-color: @primary;
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0.7rem;
+      background-color: @rt-on-primary;
+      .rt-mask(@rt-icon-tip);
+    }
+  }
+
+  .rt-callout__body {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+
+    // the label sits directly above the first paragraph
+    .rt-callout__label + * {
+      margin-top: 0;
+    }
+
+    p,
+    li {
+      color: @rt-text-color;
+      line-height: 1.65;
+    }
+  }
+
+  .rt-callout__label {
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: @font-weight-bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: @rt-accent-text;
+  }
+
+  &.rt-callout--rule .rt-callout__icon::after { .rt-mask(@rt-icon-rule); }
+  &.rt-callout--warning .rt-callout__icon::after { .rt-mask(@rt-icon-warning); }
+  &.rt-callout--example .rt-callout__icon::after { .rt-mask(@rt-icon-example); }
+  &.rt-callout--summary .rt-callout__icon::after { .rt-mask(@rt-icon-summary); }
+}
+
+// Quote
+// --------------------------------------------------
+.component__body-inner .rt-quote {
+  margin: 1.2em 0;
+  padding-inline-start: 1.5rem;
+  border-inline-start: 0.25rem solid @primary;
+
+  blockquote {
+    margin: 0;
+    padding: 0;
+
+    p {
+      font-size: 1.3rem;
+      line-height: 1.55;
+      color: @rt-text-color;
+    }
+  }
+
+  figcaption {
+    margin-top: 0.5em;
+    font-size: 1rem;
+    color: @rt-muted-color;
+  }
+}
+
+// Definitions
+// --------------------------------------------------
+.component__body-inner .rt-definitions {
+  margin: 0.8em 0;
+
+  dt {
+    font-weight: @font-weight-bold;
+    color: @rt-text-color;
+  }
+
+  dd {
+    margin: 0.15em 0 0.8em;
+    padding-inline-start: 1rem;
+    border-inline-start: 2px solid mix(@primary, @white, 35%);
+  }
+
+  dd:last-child {
+    margin-bottom: 0;
+  }
+}
