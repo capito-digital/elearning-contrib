@@ -69,7 +69,7 @@
     "devDependencies": {
         "@semantic-release/git": "^10.0.1",
         "conventional-changelog-eslint": "^5.0.0",
-        "cypress": "^13.6.3",
+        "cypress": "^16.0.0",
         "eslint": "^8.49.0",
         "eslint-config-standard": "^17.1.0",
         "eslint-plugin-cypress": "^2.15.1",
