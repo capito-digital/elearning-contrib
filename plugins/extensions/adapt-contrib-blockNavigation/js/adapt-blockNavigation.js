@@ -69,10 +69,12 @@ class BlockNavigation extends Backbone.Controller {
             }
         };
 
-        // Ensure chat is created early and persists across pages
+        // Ensure chat is created early and persists across pages. Whether the course has
+        // the chat at all is in course.json, so creation waits for the data (CAI-625).
         this._ensureChat();
         // Preview builds only (CAI-626): chapter jump list in the progress bar
         this.chapterJump = new ChapterJump(this);
+        this.listenToOnce(Adapt, 'app:dataReady', this._ensureChat);
         // Expose instance for other components that need currentSelection
         Adapt.blockNavigation = this;
         Adapt.trigger('blockNavigation:initialized', {instance: this});
@@ -155,9 +157,24 @@ class BlockNavigation extends Backbone.Controller {
         }
     }
 
+    /**
+     * Whether the course offers the floating AI chat (CAI-625). The course generator writes
+     * `_globals._extensions._blockNavigation._aiAssistant._isEnabled`; only an explicit
+     * `false` switches the chat off, so builds made before the flag existed keep it.
+     * Unknown while course.json is not loaded yet.
+     */
+    _isChatEnabled() {
+        const assistant = this.getGlobalConfig()?._extensions?._blockNavigation?._aiAssistant;
+        return assistant?._isEnabled !== false;
+    }
+
     _ensureChat() {
         try {
             if (this.chatView) return;
+            // Before course.json is loaded we cannot know whether the course has the chat;
+            // app:dataReady and every page change call this again.
+            if (!Adapt.course) return;
+            if (!this._isChatEnabled()) return;
             this.chatView = new ChatView({parentView: null});
             this.chatView.render();
             // Append to body to avoid layout constraints
@@ -1194,6 +1211,7 @@ class BlockNavigation extends Backbone.Controller {
             disablePrev,
             disableNext,
             title,
+            chatEnabled: this._isChatEnabled(),
             ttsEnabled: !!this.ttsEnabled,
             isLoadingAudio: !!this._isLoadingAudio
         });
