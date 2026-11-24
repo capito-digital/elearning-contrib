@@ -853,6 +853,23 @@
   }
 }
 
+// Chapter jump list — author preview builds only (CAI-626, js/ChapterJump.js).
+// Sits next to the progress bar; shrinks first on narrow screens so the
+// navigation buttons stay visible.
+.block-navigation-progress-container__inner .block-navigation__chapter-jump {
+  flex: 0 1 16em;
+  min-width: 0;
+  max-width: 16em;
+  padding: 0.4em 0.5em;
+  border-radius: 0.25em;
+  border: 1px solid @nav-btn;
+  background: @nav-btn-inverted;
+  color: @nav-btn;
+  font: inherit;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
 // Very narrow viewports (portrait phones): hide the numeric/visual progress
 // bar entirely so the navigation buttons always remain visible. The
 // progress information is still represented by the buttons being
