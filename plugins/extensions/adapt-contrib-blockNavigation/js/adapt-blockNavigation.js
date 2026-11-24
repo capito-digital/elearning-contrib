@@ -1173,7 +1173,13 @@ class BlockNavigation extends Backbone.Controller {
         const current = this.currentIndex + 1;
         const disablePrev = this.currentIndex === 0 || !this.canNavigateBack();
         const disableNext = this.currentIndex !== total - 1 && !this.canNavigateForward();
-        const title = this.navBlocks[this.currentIndex].get('_parent')?.get('title', "")
+        // getParent(), not the deprecated get('_parent'): Adapt only fills `_parent` once
+        // something has called getParent(), and a page opened through a deep link
+        // (preview at a chapter, CAI-626) can get here before anything did — the
+        // heading then stayed empty.
+        const currentBlock = this.navBlocks[this.currentIndex];
+        const parent = currentBlock.getParent?.() || currentBlock.get('_parent');
+        const title = parent?.get('title') || '';
 
         const model = new Backbone.Model({
             _globals: {_extensions: {_blockNavigation: blockNavigation}},
