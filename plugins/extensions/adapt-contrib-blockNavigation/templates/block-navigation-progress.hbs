@@ -7,7 +7,9 @@
       {{{_globals._extensions._blockNavigation._buttons._previous.text}}}
     </button>
     <progress id="progressbar" value={{progress}} max="100" aria-label="{{progressAria}}" title="{{progressText}}"></progress>
+    {{#if chatEnabled}}
     <button type="button" class="block-navigation__btn block-navigation__btn--chat js-chat-open" title="Chat öffnen" aria-label="Chat öffnen" data-i18n-aria="chat.open.aria" data-i18n-title="chat.open.aria">🤖</button>
+    {{/if}}
     <button class="block-navigation__btn block-navigation__btn--next js-block-nav-next"
             aria-label="{{#if nextButtonAria}}{{nextButtonAria}}{{else}}{{_globals._extensions._blockNavigation._buttons._next.ariaLabel}}{{/if}}"
             data-i18n-aria="buttons.next.aria"
