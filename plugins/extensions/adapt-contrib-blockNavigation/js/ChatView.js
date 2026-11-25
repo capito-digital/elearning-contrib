@@ -244,6 +244,13 @@ export default class ChatView extends Backbone.View {
             });
             // Remove the sending status
             this.removeLastSystemSendingMessage();
+            if (resp.status === 403) {
+                // The course has the assistant switched off; a build published
+                // before the switch still shows the chat. Asking again can never work.
+                this.addSystemMessage(this.getUnavailableMessage(this.locale));
+                this.$input.prop('disabled', true);
+                return;
+            }
             if (!resp.ok) {
                 this.addSystemMessage('Fehler beim Senden: ' + resp.status);
                 return;
@@ -367,6 +374,27 @@ export default class ChatView extends Backbone.View {
             placeholder = this.getDefaultPlaceholder(locale);
         }
         return String(placeholder);
+    }
+
+    getUnavailableMessage(locale) {
+        switch (String(locale || '').toLowerCase()) {
+            case 'de':
+                return 'Der KI-Assistent ist in diesem Kurs nicht verfügbar.';
+            case 'en':
+                return 'The AI assistant is not available in this course.';
+            case 'fr':
+                return 'L’assistant IA n’est pas disponible dans ce cours.';
+            case 'es':
+                return 'El asistente de IA no está disponible en este curso.';
+            case 'it':
+                return 'L’assistente IA non è disponibile in questo corso.';
+            case 'pt':
+                return 'O assistente de IA não está disponível neste curso.';
+            case 'nl':
+                return 'De AI-assistent is niet beschikbaar in deze cursus.';
+            default:
+                return 'The AI assistant is not available in this course.';
+        }
     }
 
     getDefaultPlaceholder(locale) {
