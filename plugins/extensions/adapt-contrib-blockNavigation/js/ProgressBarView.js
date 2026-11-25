@@ -139,7 +139,11 @@ export default class ProgressBarView extends Backbone.View {
         console.log('[blockNavigation:TopBarView] next clicked', {isLast});
         if (isLast) {
             if (this.completionStored) {
-                window.history.back();
+                // To the overview explicitly, not history.back(): a page opened
+                // through a link (the editor's preview at a chapter, CAI-626) has no
+                // overview entry in its history, and after a chapter jump the
+                // previous entry is another chapter.
+                Backbone.history.navigate('#/', {trigger: true});
                 return;
             }
             // Emit completion event for listeners (e.g., capitoBadges)

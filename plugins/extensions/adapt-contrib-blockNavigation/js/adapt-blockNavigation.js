@@ -269,7 +269,9 @@ class BlockNavigation extends Backbone.Controller {
 
         // filter special cases and enabled blocks
         this.navBlocks = blocks.filter(block => this.isBlockNavigable(block));
-        if (this.navBlocks.length <= 1) return; // nothing to paginate
+        // Nothing to paginate. A preview still gets the footer on a one-block page,
+        // because the chapter jump list lives in it (CAI-626).
+        if (this.navBlocks.length === 0 || (this.navBlocks.length === 1 && !isPreview())) return;
 
         this.currentArticle = article;
         // Preview builds (CAI-626) open at the chapter routed to (`#/id/article-<id>`);
@@ -937,6 +939,8 @@ class BlockNavigation extends Backbone.Controller {
     }
 
     canNavigateBack() {
+        // Preview builds (CAI-626): no "finish this first" gating in either direction.
+        if (isPreview()) return true;
         const block = this.currentBlock();
         if (!block) return true;
         const setting = block.get('_blockNavigation')?._canNavigateBack;
@@ -950,7 +954,7 @@ class BlockNavigation extends Backbone.Controller {
         return this.navBlocks[this.currentIndex];
     }
 
-    showBlock(index) {
+    showBlock(index, {moveFocus = true} = {}) {
         if (!this.navBlocks.length) return;
         if (index < 0 || index >= this.navBlocks.length) return;
         const oldIndex = this.currentIndex;
@@ -985,9 +989,11 @@ class BlockNavigation extends Backbone.Controller {
         this.createOrUpdateFooter();
 
         // 5. After layout is committed, move focus to the new block / navigation title
-        requestAnimationFrame(() => {
-            this.announceCurrent(articleChanged);
-        });
+        if (moveFocus) {
+            requestAnimationFrame(() => {
+                this.announceCurrent(articleChanged);
+            });
+        }
 
         Adapt.trigger('blockNavigation:changed', {oldIndex, newIndex: index});
         this.checkAllCompleted();

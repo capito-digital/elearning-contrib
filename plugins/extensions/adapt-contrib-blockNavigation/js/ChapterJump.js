@@ -14,8 +14,10 @@ import data from 'core/js/data';
  * another page is reached through Adapt's router (`#/id/article-<chapter id>`), where
  * the controller's preview start logic (`previewStartIndex`) picks it up.
  *
- * It is a separate module on purpose: the controller only calls `isPreview()` and
- * `previewStartIndex()`, so the chapter list does not touch the progress-bar template.
+ * It is a separate module on purpose, so the chapter list does not touch the
+ * progress-bar template. It still uses the controller's navigation state
+ * (`navBlocks`, `currentBlock()`, `showBlock()`, `isBlockNavigable()`,
+ * `currentSelection`, `_getI18nMap()`).
  */
 export const CHAPTER_JUMP_CLASS = 'block-navigation__chapter-jump';
 const I18N_KEY = 'chapterJump.aria';
@@ -25,11 +27,19 @@ export function isPreview() {
     return Adapt.course?.get('_globals')?._extensions?._blockNavigation?._isPreview === true;
 }
 
-/** The id a `#/id/<id>` route names, or null. */
+/** The id a `#/id/<id>` route names, or null (also for a malformed escape). */
 export function routedId(hash = window.location.hash) {
     const m = String(hash || '').match(/^#\/id\/([^/?#]+)/);
-    return m ? decodeURIComponent(m[1]) : null;
+    if (!m) return null;
+    try {
+        return decodeURIComponent(m[1]);
+    } catch (e) {
+        return null;
+    }
 }
+
+/** Keys that move a closed <select>'s value: browsing, not a decision to jump. */
+const BROWSE_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown']);
 
 /**
  * Index into `navBlocks` the page should open at. In a preview: the routed block, or
@@ -68,6 +78,13 @@ export default class ChapterJump {
         Adapt.on('contentSelector:selectionChanged', () => {
             if (isPreview()) this.relabel();
         });
+        // Before the router reads the URL: a preview link to a chapter that is not in
+        // the build (no content, or deleted since) would leave Adapt on its loading
+        // screen ("Bad id"). Open the course start instead.
+        Adapt.once('adapt:start', () => {
+            const id = routedId();
+            if (isPreview() && id && !data.findById(id)) window.location.replace('#/');
+        });
     }
 
     chapters() {
@@ -93,7 +110,28 @@ export default class ChapterJump {
             option.value = article.get('_id');
             select.appendChild(option);
         });
-        select.addEventListener('change', () => this.jumpTo(select.value));
+        // A closed <select> fires `change` on every arrow key; jumping (and moving
+        // focus away) there would make the list unusable from the keyboard. Arrow
+        // keys only browse; Enter, a mouse pick or a picker's own commit jumps.
+        let browsing = false;
+        select.addEventListener('keydown', (event) => {
+            if (BROWSE_KEYS.has(event.key)) {
+                browsing = true;
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                browsing = false;
+                this.jumpTo(select.value);
+            }
+        });
+        select.addEventListener('mousedown', () => { browsing = false; });
+        select.addEventListener('change', () => {
+            if (!browsing) this.jumpTo(select.value);
+        });
+        // Browsed away without committing: show the current chapter again.
+        select.addEventListener('blur', () => {
+            browsing = false;
+            this.syncValue();
+        });
 
         const progress = inner.querySelector('progress');
         if (progress) progress.insertAdjacentElement('afterend', select); else inner.appendChild(select);
@@ -112,10 +150,11 @@ export default class ChapterJump {
         const label = this.controller._getI18nMap()?.[I18N_KEY]?.[key] || FALLBACK_LABEL;
         select.setAttribute('aria-label', label);
         select.setAttribute('title', label);
-        Array.from(select.options).forEach((option, i) => {
+        // No numbers: chapters without content are not in the build, so a position in
+        // this list would not match the chapter's number in the editor.
+        Array.from(select.options).forEach((option) => {
             const article = data.findById(option.value);
-            const title = article ? localizedTitle(article.get('displayTitle') || article.get('title'), selection) : '';
-            option.textContent = `${i + 1}. ${title}`.trim();
+            option.textContent = article ? localizedTitle(article.get('displayTitle') || article.get('title'), selection) : '';
         });
     }
 
@@ -130,7 +169,9 @@ export default class ChapterJump {
         const navBlocks = this.controller.navBlocks || [];
         const index = navBlocks.findIndex(b => b.get('_parentId') === articleId);
         if (index >= 0) {
-            this.controller.showBlock(index);
+            // Keep focus on the list (the controller would move it to the chapter title)
+            this.controller.showBlock(index, {moveFocus: false});
+            requestAnimationFrame(() => this.selectEl?.focus());
             return;
         }
         // Chapter on another page: let Adapt's router render that page; the
