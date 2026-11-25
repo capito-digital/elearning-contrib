@@ -1,6 +1,7 @@
 import Adapt from 'core/js/adapt';
 import BlockNavigationView from './adapt-blockNavigationView';
 import ChatView from './ChatView';
+import ChapterJump, {isPreview, previewStartIndex} from './ChapterJump';
 import data from 'core/js/data';
 import a11y from 'core/js/a11y';
 
@@ -70,6 +71,8 @@ class BlockNavigation extends Backbone.Controller {
 
         // Ensure chat is created early and persists across pages
         this._ensureChat();
+        // Preview builds only (CAI-626): chapter jump list in the progress bar
+        this.chapterJump = new ChapterJump(this);
         // Expose instance for other components that need currentSelection
         Adapt.blockNavigation = this;
         Adapt.trigger('blockNavigation:initialized', {instance: this});
@@ -266,10 +269,14 @@ class BlockNavigation extends Backbone.Controller {
 
         // filter special cases and enabled blocks
         this.navBlocks = blocks.filter(block => this.isBlockNavigable(block));
-        if (this.navBlocks.length <= 1) return; // nothing to paginate
+        // Nothing to paginate. A preview still gets the footer on a one-block page,
+        // because the chapter jump list lives in it (CAI-626).
+        if (this.navBlocks.length === 0 || (this.navBlocks.length === 1 && !isPreview())) return;
 
         this.currentArticle = article;
-        this.currentIndex = 0;
+        // Preview builds (CAI-626) open at the chapter routed to (`#/id/article-<id>`);
+        // published builds always start at the first block.
+        this.currentIndex = previewStartIndex(this.navBlocks);
 
         // Build quick lookup for indices by block id
         this._blockIndexById = {};
@@ -277,9 +284,9 @@ class BlockNavigation extends Backbone.Controller {
             this._blockIndexById[b.get('_id')] = i;
         });
 
-        // Hide all except first; some blocks may not have rendered yet, so defer hiding until their views are ready
+        // Hide all except the start block; some blocks may not have rendered yet, so defer hiding until their views are ready
         this.navBlocks.forEach((block, idx) => {
-            this._setBlockHidden(block, idx !== 0);
+            this._setBlockHidden(block, idx !== this.currentIndex);
         });
         this._deferInitialHideUntilBlocksRender();
 
@@ -293,7 +300,7 @@ class BlockNavigation extends Backbone.Controller {
         $(document).off('keydown.blockNavArrows').on('keydown.blockNavArrows', this._onArrowKeydown);
 
         this.announceCurrent();
-        Adapt.trigger('blockNavigation:changed', {oldIndex: -1, newIndex: 0});
+        Adapt.trigger('blockNavigation:changed', {oldIndex: -1, newIndex: this.currentIndex});
         // Ensure article headings reflect visibility
         this._updateArticleHeadings();
 
@@ -920,6 +927,8 @@ class BlockNavigation extends Backbone.Controller {
 
     // Resolve forward/backward permission based on current block settings
     canNavigateForward() {
+        // Preview builds (CAI-626): an author may step past unanswered questions.
+        if (isPreview()) return true;
         const block = this.currentBlock();
         if (!block) return true;
         const setting = block.get('_blockNavigation')?._canNavigateForward;
@@ -930,6 +939,8 @@ class BlockNavigation extends Backbone.Controller {
     }
 
     canNavigateBack() {
+        // Preview builds (CAI-626): no "finish this first" gating in either direction.
+        if (isPreview()) return true;
         const block = this.currentBlock();
         if (!block) return true;
         const setting = block.get('_blockNavigation')?._canNavigateBack;
@@ -943,7 +954,7 @@ class BlockNavigation extends Backbone.Controller {
         return this.navBlocks[this.currentIndex];
     }
 
-    showBlock(index) {
+    showBlock(index, {moveFocus = true} = {}) {
         if (!this.navBlocks.length) return;
         if (index < 0 || index >= this.navBlocks.length) return;
         const oldIndex = this.currentIndex;
@@ -978,9 +989,11 @@ class BlockNavigation extends Backbone.Controller {
         this.createOrUpdateFooter();
 
         // 5. After layout is committed, move focus to the new block / navigation title
-        requestAnimationFrame(() => {
-            this.announceCurrent(articleChanged);
-        });
+        if (moveFocus) {
+            requestAnimationFrame(() => {
+                this.announceCurrent(articleChanged);
+            });
+        }
 
         Adapt.trigger('blockNavigation:changed', {oldIndex, newIndex: index});
         this.checkAllCompleted();
@@ -1166,7 +1179,13 @@ class BlockNavigation extends Backbone.Controller {
         const current = this.currentIndex + 1;
         const disablePrev = this.currentIndex === 0 || !this.canNavigateBack();
         const disableNext = this.currentIndex !== total - 1 && !this.canNavigateForward();
-        const title = this.navBlocks[this.currentIndex].get('_parent')?.get('title', "")
+        // getParent(), not the deprecated get('_parent'): Adapt only fills `_parent` once
+        // something has called getParent(), and a page opened through a deep link
+        // (preview at a chapter, CAI-626) can get here before anything did — the
+        // heading then stayed empty.
+        const currentBlock = this.navBlocks[this.currentIndex];
+        const parent = currentBlock.getParent?.() || currentBlock.get('_parent');
+        const title = parent?.get('title') || '';
 
         const model = new Backbone.Model({
             _globals: {_extensions: {_blockNavigation: blockNavigation}},
